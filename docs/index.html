@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="Dashboard de gestión de citas para Centro Óptico González. Administre reservas, visualice estadísticas y gestione el calendario de servicios.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Óptica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+  <style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fadeIn {
+  animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes bounceIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  80% { transform: scale(0.95);}
+  100% { transform: scale(1);}
+}
+.animate-bounceIn { animation: bounceIn 0.7s cubic-bezier(.4,0,.2,1) both; }
+
+/* Animaciones mejoradas */
+@keyframes floatIn {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-floatIn {
+  animation: floatIn 0.6s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+/* Animación para contadores numéricos */
+@keyframes countUp {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-countUp {
+  animation: countUp 1s cubic-bezier(0.42, 0, 0.58, 1) forwards;
+}
+
+/* Paleta de colores actualizada para una óptica */
+:root {
+  --primary: #3b82f6;      /* Azul más profesional */
+  --primary-light: #bfdbfe; 
+  --secondary: #22c55e;    /* Verde para éxito/completado */
+  --accent: #8b5cf6;       /* Púrpura para elementos destacados */
+  --warning: #facc15;      /* Amarillo brillante para alertas */
+  --danger: #ef4444;       /* Rojo para errores/cancelaciones */
+  --neutral-50: #f8fafc;   /* Fondo más suave */
+  --neutral-100: #f1f5f9;  /* Tarjetas con tono más cálido */
+  --neutral-200: #e2e8f0;  /* Bordes más suaves */
+  --neutral-800: #1e293b;  /* Texto principal más elegante */
+  --glass-bg: rgba(255, 255, 255, 0.85); /* Fondo con efecto cristal */
+}
+
+/* Sombra y marco para los gráficos */
+.chart-container {
+  position: relative;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(240,249,255,0.9) 100%);
+  border: 1px solid rgba(224, 242, 254, 0.7);
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.15);
+  transform: translateY(-3px);
+}
+
+/* Tipografía optimizada */
+html {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* Header mejorado con efecto de vidrio más sofisticado */
+header {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(219, 234, 254, 0.7);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
+  transition: all 0.3s ease;
+  padding: 1.25rem 1.75rem;
+  position: relative;
+  overflow: hidden;
+  z-index: 20; /* Asegura que el header esté por encima de otros elementos */
+}
+
+/* CORRECCIÓN PARA EL PROBLEMA DE SUPERPOSICIÓN */
+header.sticky.top-0 {
+  position: sticky;
+  top: 0;
+  z-index: 30; /* Valor más alto que otros elementos */
+}
+
+/* Corrección para asegurar que los elementos de estadísticas no se superpongan */
+.grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3,
+.grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+  position: relative;
+  z-index: 10; /* Valor menor que el header pero mayor que elementos de fondo */
+}
+
+/* Contenido principal necesita tener z-index más bajo que header */
+main {
+  position: relative;
+  z-index: 10;
+}
+
+/* Efecto de gradiente para el header */
+header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4f46e5, #22d3ee, #4f46e5);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+/* Título más atractivo con gradiente y sombra */
+header h1 {
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-shadow: 3px 3px 6px rgba(99, 102, 241, 0.2);
+  position: relative;
+}
+
+/* Indicador de tiempo real más elegante */
+#indicadorTiempoReal {
+  background: linear-gradient(to right, #dcfce7, #f0fdf4);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.2);
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+}
+
+#indicadorTiempoReal:hover {
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+  transform: translateY(-1px);
+}
+
+#puntoTiempoReal {
+  box-shadow: 0 0 0 rgba(74, 222, 128, 0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+}
+
+/* Asegurar que las secciones de estadísticas no se solapen */
+section {
+  position: relative;
+  z-index: 5;
+}
+
+/* Botón nueva cita más atractivo */
+#addReservationBtn {
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 30; /* Asegurar que siempre esté por encima */
+}
+
+#addReservationBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
+}
+
+#addReservationBtn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0) 0%, 
+    rgba(255,255,255,0.3) 50%, 
+    rgba(255,255,255,0) 100%
+  );
+  transition: all 0.8s ease;
+}
+
+#addReservationBtn:hover::after {
+  left: 100%;
+}
+
+/* Fondo mejorado con animación suave */
+body {
+  background: linear-gradient(135deg, #f0f4ff, #ebf4ff, #f5f3ff);
+  background-size: 400% 400%;
+  animation: gradientBackground 15s ease infinite;
+  position: relative;
+}
+
+@keyframes gradientBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Decoración de fondo con elementos abstractos */
+body::before {
+  content: '';
+  position: fixed;
+  top: 10%;
+  right: 5%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0) 70%);
+  z-index: -1;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 10%;
+  left: 5%;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 209, 197, 0.1) 0%, rgba(79, 209, 197, 0) 70%);
+  z-index: -1;
+}
+
+/* Mejora del fondo de modal para que cubra toda la pantalla */
+[id$="Modal"].fixed {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+/* Mejora del fondo oscuro para que cubra toda la pantalla */
+[id$="Modal"] .bg-black.bg-opacity-40 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Asegura que el modal esté centrado correctamente */
+[id$="Modal"] .bg-white {
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10000;
+}
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <!-- Sidebar para escritorio y móvil -->
+<aside id="sidebar"
+  class="bg-gradient-to-b from-[#4fd3e6] to-[#22325a] text-white w-64 flex-shrink-0 flex-col shadow-lg sticky top-0 h-screen z-30 transition-transform duration-300 hidden md:flex">
+  <div class="p-6 flex flex-col items-center">
+    <div class="bg-white rounded-full p-0 mb-4 shadow-lg w-28 h-28 flex items-center justify-center border-4 border-indigo-200">
+     <img src="redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-24 w-24 object-cover rounded-full">
+    </div>
+    <h2 class="text-3xl font-extrabold mb-8 tracking-wide text-center" style="color:#22325a;">
+  Centro Óptico González
+</h2>
+    <nav class="space-y-2 w-full">
+      <a href="Index.html" class="flex items-center gap-3 py-2 px-4 rounded-lg bg-indigo-800 hover:bg-indigo-600 transition font-semibold shadow hover:scale-105">
+        <!-- Ejemplo de icono SVG para Dashboard -->
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+</svg>        <span>Dashboard</span>
+      </a>
+      <a href="Citas.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📅</span> <span>Citas</span>
+      </a>
+      <a href="CarteraDeClientes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">👤</span> <span>Clientes</span>
+      </a>
+      <a href="Reportes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📈</span> <span>Reportes</span>
+      </a>
+      <a href="Configuracion.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">⚙️</span> <span>Configuración</span>
+      </a>
+    </nav>
+  </div>
+  <div class="mt-auto p-4 text-xs text-indigo-200 text-center">
+    &copy; 2025 Centro Óptico González
+  </div>
+</aside>
+
+<!-- Sidebar móvil (oculto en escritorio) -->
+<div id="sidebarMobileBackdrop" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden"></div>
+<aside id="sidebarMobile"
+  class="fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-indigo-900 to-indigo-700 text-white shadow-lg z-50 transform -translate-x-full transition-transform duration-300 flex flex-col md:hidden">
+  <div class="p-6 flex flex-col items-center">
+    <button id="closeSidebarMobile" class="absolute top-4 right-4 text-white text-2xl focus:outline-none">&times;</button>
+    <div class="bg-white rounded-full p-0 mb-4 shadow-lg w-28 h-28 flex items-center justify-center border-4 border-indigo-200">
+      <img src="redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-24 w-24 object-cover rounded-full">
+    </div>
+    <h2 class="text-2xl font-bold mb-8 tracking-wide text-center">Óptica Elegante</h2>
+    <nav class="space-y-2 w-full">
+      <a href="Index.html" class="flex items-center gap-3 py-2 px-4 rounded-lg bg-indigo-800 hover:bg-indigo-600 transition font-semibold shadow hover:scale-105">
+        <!-- Ejemplo de icono SVG para Dashboard -->
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+</svg>        <span>Dashboard</span>
+      </a>
+      <a href="Citas.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📅</span> <span>Citas</span>
+      </a>
+      <a href="CarteraDeClientes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">👤</span> <span>Clientes</span>
+      </a>
+      <a href="Reportes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📈</span> <span>Reportes</span>
+      </a>
+      <a href="Configuracion.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">⚙️</span> <span>Configuración</span>
+      </a>
+    </nav>
+  </div>
+  <div class="mt-auto p-4 text-xs text-indigo-200 text-center">
+    &copy; 2025 Óptica Elegante
+  </div>
+</aside>
+
+<!-- Botón toggle para móviles -->
+<div class="md:hidden fixed top-4 left-4 z-50">
+  <button id="sidebarToggle" class="bg-indigo-800 text-white p-2 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-white transition-opacity duration-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+</div>
+
+    <!-- Contenido principal -->
+    <div class="flex-1 flex flex-col">
+      <!-- Cambiar el header con el indicador de tiempo real -->
+<header class="bg-white/80 shadow p-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center sticky top-0 z-10 backdrop-blur">
+  <div class="flex items-center">
+    <h1 class="text-2xl font-bold text-indigo-800 tracking-wide text-center">Dashboard de Citas</h1>
+    <div id="indicadorTiempoReal" 
+      class="ml-3 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs flex items-center">
+      <span id="puntoTiempoReal" class="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+      <span>Tiempo real</span>
+    </div>
+  </div>
+  <button id="addReservationBtn"
+    class="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-indigo-400 text-white px-6 py-2 rounded-lg shadow hover:from-indigo-700 hover:to-indigo-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 font-semibold text-base sm:text-lg">
+    + Nueva Cita
+  </button>
+</header>
+
+      <main class="p-6 flex-1 space-y-8 pt-16 sm:pt-6">
+        <!-- Estadísticas con iconos y efecto 3D -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+  <div class="relative bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+    <div class="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
+    <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-indigo-100 opacity-50"></div>
+    <div class="p-6 z-10 relative">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-indigo-900">Total de Citas</h3>
+        <div class="p-2 bg-indigo-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-4xl font-extrabold text-indigo-700 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="totalCitas">0</div>
+      <p class="text-indigo-500 font-medium text-sm">Gestión total de reservas</p>
+    </div>
+  </div>
+  
+  <div class="relative bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+    <div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+    <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-100 opacity-50"></div>
+    <div class="p-6 z-10 relative">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-green-900">Citas Hoy</h3>
+        <div class="p-2 bg-green-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-4xl font-extrabold text-green-600 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="citasHoy">0</div>
+      <p class="text-green-500 font-medium text-sm">Citas programadas para hoy</p>
+    </div>
+  </div>
+  
+  <div class="relative bg-gradient-to-br from-white to-amber-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+    <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+    <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-amber-100 opacity-50"></div>
+    <div class="p-6 z-10 relative">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-amber-900">Pendientes</h3>
+        <div class="p-2 bg-amber-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-4xl font-extrabold text-amber-600 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="citasPendientes">0</div>
+      <p class="text-amber-500 font-medium text-sm">Citas por atender</p>
+    </div>
+  </div>
+</section>
+
+        <!-- Sección de estadísticas adicionales -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+          <div class="relative bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+            <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+            <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-100 opacity-50"></div>
+            <div class="p-6 z-10 relative">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-blue-900">Citas Completadas</h3>
+                <div class="p-2 bg-blue-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <div class="text-4xl font-extrabold text-blue-600 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="citasCompletadas">0</div>
+              <p class="text-blue-500 font-medium text-sm">Servicios finalizados</p>
+            </div>
+          </div>
+          
+          <div class="relative bg-gradient-to-br from-white to-red-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+            <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+            <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-red-100 opacity-50"></div>
+            <div class="p-6 z-10 relative">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-red-900">Citas Canceladas</h3>
+                <div class="p-2 bg-red-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </div>
+              <div class="text-4xl font-extrabold text-red-600 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="citasCanceladas">0</div>
+              <p class="text-red-500 font-medium text-sm">Servicios cancelados</p>
+            </div>
+          </div>
+          
+          <div class="relative bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+            <div class="absolute top-0 left-0 w-full h-1 bg-purple-500"></div>
+            <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-100 opacity-50"></div>
+            <div class="p-6 z-10 relative">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-purple-900">Promedio Diario</h3>
+                <div class="p-2 bg-purple-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+              </div>
+              <div class="text-4xl font-extrabold text-purple-600 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="promedioDiario">0</div>
+              <p class="text-purple-500 font-medium text-sm">Citas por día</p>
+            </div>
+          </div>
+          
+          <div class="relative bg-gradient-to-br from-white to-teal-50 rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+            <div class="absolute top-0 left-0 w-full h-1 bg-teal-500"></div>
+            <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-teal-100 opacity-50"></div>
+            <div class="p-6 z-10 relative">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-teal-900">Tasa de Completadas</h3>
+                <div class="p-2 bg-teal-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div class="text-4xl font-extrabold text-teal-600 mb-2 transition-all duration-500 group-hover:scale-110 animate-countUp" id="tasaCompletadas">0%</div>
+              <p class="text-teal-500 font-medium text-sm">Tasa de éxito</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tabla de citas -->
+        <section class="bg-white/90 rounded-xl shadow-lg p-4 md:p-6">
+          <h2 class="text-xl font-semibold mb-4 text-indigo-800">Citas Agendadas</h2>
+          <!-- Tabla con diseño moderno -->
+<div class="overflow-hidden rounded-xl shadow-lg border border-gray-100">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead>
+      <tr class="bg-gradient-to-r from-blue-50 to-indigo-50">
+        <th class="px-6 py-3 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">Cliente</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">Fecha</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">Hora</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">Servicio</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">Estado</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">Acciones</th>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-100" id="reservasTableBody">
+      <!-- Las filas se llenarán con JavaScript -->
+    </tbody>
+  </table>
+</div>
+          <div id="paginacionCitas" class="flex justify-center mt-4 gap-2"></div>
+        </section>
+   
+        <!-- Gráficos Estadísticos Mejorados y Responsivos -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+          <!-- Servicios más solicitados -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-indigo-500 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-indigo-800 text-center">Servicios más solicitados</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="serviciosChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Estados de Citas -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-green-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-green-700 text-center">Estados de Citas</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="estadosChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Citas por Día/Mes/Año con filtro y título dinámico -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-yellow-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <div class="w-full flex justify-end mb-2">
+              <select id="filtroDiasChart" class="border border-indigo-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <option value="dia">Por Día</option>
+                <option value="mes">Por Mes</option>
+                <option value="anio">Por Año</option>
+              </select>
+            </div>
+            <h2 id="tituloCitasPorDia" class="text-lg font-bold mb-4 text-yellow-700 text-center">Citas por Día</h2>
+            <div id="contenedorCitasPorDia" class="w-full h-72 flex items-center justify-center">
+              <canvas id="diasChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Citas por Hora -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-pink-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-pink-700 text-center">Citas por Hora</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="horasChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Clientes más frecuentes -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-blue-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-blue-700 text-center">Clientes más frecuentes</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="clientesChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Servicios por Estado -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-purple-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-purple-700 text-center">Servicios por Estado</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="serviciosEstadoChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Mes con más reservas -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-orange-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-orange-700 text-center">Reservas por Mes</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="mesesChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Año con más reservas -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-cyan-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-cyan-700 text-center">Reservas por Año</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="aniosChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+          <!-- Días de la semana con más reservas -->
+          <div class="bg-white/90 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col items-center border-t-4 border-lime-400 transition-all duration-300 hover:scale-[1.03] animate-fadeIn">
+            <h2 class="text-lg font-bold mb-4 text-lime-700 text-center">Reservas por Día de la Semana</h2>
+            <div class="w-full h-72 flex items-center justify-center">
+              <canvas id="diasSemanaChart" class="max-w-full max-h-64"></canvas>
+            </div>
+          </div>
+        </section>
+
+
+      
+    
+
+  <!-- Modal para nueva cita -->
+  <div id="reservationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 border-t-4 border-indigo-500 z-10">
+    <button type="button" id="cerrarModalBtn" class="absolute top-4 right-4 text-indigo-400 hover:text-indigo-700 text-2xl font-bold focus:outline-none">&times;</button>
+    <h3 class="text-2xl font-bold mb-6 text-indigo-700 text-center">Agendar Nueva Cita</h3>
+    <form id="reservationForm" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1 text-indigo-700">Nombre del Cliente <span class="text-red-500">*</span></label>
+          <input type="text" id="cliente" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" required maxlength="60" placeholder="Ej: Juan Pérez">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1 text-indigo-700">Teléfono <span class="text-red-500">*</span></label>
+          <input type="tel" id="telefono" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" required pattern="[0-9]{7,15}" maxlength="15" placeholder="Ej: 3001234567">
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1 text-indigo-700">Fecha <span class="text-red-500">*</span></label>
+          <input type="text" id="fecha" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" required placeholder="Selecciona fecha">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1 text-indigo-700">Hora <span class="text-red-500">*</span></label>
+          <input type="time" id="hora" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" required>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1 text-indigo-700">Servicio <span class="text-red-500">*</span></label>
+        <select id="servicio" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" required>
+          <option value="">Selecciona un servicio</option>
+          <option value="Examen de la Vista">Examen de la Vista</option>
+          <option value="Entrega de Lentes">Entrega de Lentes</option>
+          <option value="Control">Control</option>
+          <option value="Ajuste de Montura">Ajuste de Montura</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1 text-indigo-700">Estado</label>
+        <select id="estado" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="Pendiente">Pendiente</option>
+          <option value="Confirmada">Confirmada</option>
+          <option value="Cancelada">Cancelada</option>
+          <option value="Completada">Completada</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1 text-indigo-700">Notas</label>
+        <textarea id="notas" rows="2" class="w-full border border-indigo-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Observaciones, recomendaciones, etc."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-4">
+        <button type="button" id="cancelarModal" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-semibold">Cancelar</button>
+        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-indigo-400 text-white rounded hover:from-indigo-700 hover:to-indigo-500 font-semibold shadow">Guardar Cita</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <!-- Modal para detalle de cita -->
+  <div id="detalleModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-indigo-500">
+      <h3 class="text-xl font-bold mb-6 text-indigo-700">Detalle de la Cita</h3>
+      <div id="detalleContenido" class="space-y-2 mb-4"></div>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="cerrarDetalle" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-semibold">Cerrar</button>
+        <button type="button" id="finalizarCitaBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 font-semibold">Finalizar</button>
+        <button type="button" id="cancelarCitaBtn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 font-semibold">Cancelar Cita</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agrega esto antes de </body> -->
+<div id="confirmCancelModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999] hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-red-500">
+    <h3 class="text-xl font-bold mb-4 text-red-700">¿Estás seguro de cancelar la cita?</h3>
+    <div id="confirmCancelInfo" class="mb-4 text-gray-700"></div>
+    <div class="flex justify-end gap-2">
+      <button id="cancelarConfirmCancel" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-semibold">No, volver</button>
+      <button id="aceptarConfirmCancel" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 font-semibold">Sí, cancelar cita</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para finalizar cita -->
+<div id="confirmFinishModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999] hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-green-500">
+    <h3 class="text-xl font-bold mb-4 text-green-700">¿Estás seguro de finalizar la cita?</h3>
+    <div id="confirmFinishInfo" class="mb-4 text-gray-700"></div>
+    <div class="flex justify-end gap-2">
+      <button id="cancelarConfirmFinish" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-semibold">No, volver</button>
+      <button id="aceptarConfirmFinish" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 font-semibold">Sí, finalizar cita</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Script JS -->
+  <script>
+    const sidebar = document.querySelector('aside');
+    document.getElementById('sidebarToggle').onclick = () => {
+      document.getElementById('sidebarMobile').classList.remove('-translate-x-full');
+      document.getElementById('sidebarMobileBackdrop').classList.remove('hidden');
+      document.getElementById('sidebarToggle').classList.add('opacity-0', 'pointer-events-none'); // Oculta con animación
+    };
+
+    document.getElementById('closeSidebarMobile').onclick = () => {
+      document.getElementById('sidebarMobile').classList.add('-translate-x-full');
+      document.getElementById('sidebarMobileBackdrop').classList.add('hidden');
+      setTimeout(() => {
+        document.getElementById('sidebarToggle').classList.remove('opacity-0', 'pointer-events-none'); // Muestra con animación
+      }, 300); // Espera la animación del menú
+    };
+
+    document.getElementById('sidebarMobileBackdrop').onclick = () => {
+      document.getElementById('sidebarMobile').classList.add('-translate-x-full');
+      document.getElementById('sidebarMobileBackdrop').classList.add('hidden');
+      setTimeout(() => {
+        document.getElementById('sidebarToggle').classList.remove('opacity-0', 'pointer-events-none');
+      }, 300);
+    };
+    // Cierra menú móvil al hacer click en cualquier enlace del menú
+    document.querySelectorAll('#sidebarMobile nav a').forEach(a => {
+      a.onclick = () => {
+        document.getElementById('sidebarMobile').classList.add('-translate-x-full');
+        document.getElementById('sidebarMobileBackdrop').classList.add('hidden');
+      };
+    });
+
+// URL de tu Apps Script para guardar citas
+const formScriptURL = 'https://script.google.com/macros/s/AKfycbxAYH3aOGt7xZgHczxalSihEW_YUhZU-JAv3WwVBqsSMSyOapN4gjxP6V7ER2lnEvTA/exec';
+
+// Abrir modal
+document.getElementById('addReservationBtn').onclick = () => {
+  document.getElementById('reservationModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('reservationForm').reset();
+  setTimeout(() => document.getElementById('cliente').focus(), 100);
+};
+// Cerrar modal
+document.getElementById('cerrarModalBtn').onclick = () => {
+  document.getElementById('reservationModal').classList.add('hidden');
+  document.body.style.overflow = '';
+};
+document.getElementById('cancelarModal').onclick = () => {
+  document.getElementById('reservationModal').classList.add('hidden');
+  document.body.style.overflow = '';
+};
+
+// Flatpickr para fecha
+flatpickr("#fecha", {
+  dateFormat: "Y-m-d",
+  minDate: "today",
+  locale: "es",
+  appendTo: document.getElementById('reservationModal')
+});
+
+// Variables para el tiempo real
+let tiempoRealIntervalo;
+const INTERVALO_ACTUALIZACION = 30000; // 30 segundos
+
+// Iniciar el intervalo cuando se carga la página
+window.addEventListener('DOMContentLoaded', () => {
+  cargarReservas();
+  tiempoRealIntervalo = setInterval(cargarReservas, INTERVALO_ACTUALIZACION);
+});
+
+// Generar ID único
+function generarIDUnico() {
+  return Math.floor(10000 + Math.random() * 90000).toString();
+}
+
+// Enviar formulario
+document.getElementById('reservationForm').onsubmit = async function(e) {
+  e.preventDefault();
+  // Validación manual
+  let errorMsg = "";
+  const cliente = document.getElementById('cliente').value.trim();
+  const telefono = document.getElementById('telefono').value.trim();
+  const fecha = document.getElementById('fecha').value.trim();
+  const horaInput = document.getElementById('hora').value.trim();
+  let hora = "";
+  if (horaInput) {
+    const [h, m] = horaInput.split(':');
+    let hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    hora = `${hour}:${m} ${ampm}`;
+  }
+  const servicio = document.getElementById('servicio').value.trim();
+
+  if (!cliente) errorMsg += "Ingrese el nombre del cliente.\n";
+  if (!telefono.match(/^[0-9]{7,15}$/)) errorMsg += "Ingrese un teléfono válido (7-15 dígitos).\n";
+  if (!fecha) errorMsg += "Seleccione la fecha.\n";
+  if (!hora) errorMsg += "Seleccione la hora.\n";
+  if (!servicio) errorMsg += "Seleccione el servicio.\n";
+
+  let errorDiv = document.getElementById('formErrorMsg');
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.id = 'formErrorMsg';
+    errorDiv.className = 'mb-2 text-red-600 font-semibold text-center';
+    document.getElementById('reservationForm').prepend(errorDiv);
+  }
+  errorDiv.textContent = errorMsg ? errorMsg.trim() : "";
+
+  if (errorMsg) return;
+
+  errorDiv.textContent = "";
+
+  const data = {
+    ID: generarIDUnico(),
+    'Nombre Cliente': cliente,
+    Fecha: fecha,
+    Hora: hora,
+    Servicio: servicio,
+    Estado: document.getElementById('estado').value,
+    Numero: telefono,
+    Nota: document.getElementById('notas').value
+  };
+
+  const params = new URLSearchParams();
+  for (const key in data) {
+    params.append(key, data[key]);
+  }
+
+  try {
+    const submitBtn = document.querySelector('#reservationForm button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Guardando...";
+
+    const response = await fetch(formScriptURL, {
+      method: 'POST',
+      body: params
+    });
+    const result = await response.json();
+    console.log("Respuesta del servidor:", result);
+    console.log("Datos enviados:", Object.fromEntries(params.entries()));
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Guardar Cita";
+
+    if (result.result === "success") {
+      document.getElementById('reservationModal').classList.add('hidden');
+      // Aquí puedes mostrar un mensaje de éxito
+      cargarReservas && cargarReservas();
+    } else {
+      errorDiv.textContent = result.message || "Error al guardar la cita.";
+    }
+  } catch (err) {
+    errorDiv.textContent = "Error de red o servidor. Intenta de nuevo.";
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Guardar Cita";
+  }
+};
+
+const scriptURL = 'https://script.google.com/macros/s/AKfycbzMTWEynlu0GWP7UqdUBNFjVv_2RHsmM8UErh2HirIaFUlIIbsldlX8fM1rW5BF25eJ/exec'; // Reemplaza por la URL de tu Apps Script
+const estadoScriptURL = 'https://script.google.com/macros/s/AKfycby5-jfc73OonembL8qG51vRv0c0niWNTi_bHFjwFP7n6MVJnBuysSb_nAgJKs89sFsn/exec'; // Reemplaza por la URL de tu Apps Script
+
+let primerCarga = true;
+let paginaActual = 1;
+const FILAS_POR_PAGINA = 5;
+let reservasGlobal = [];
+
+async function cargarReservas() {
+  // Mostrar indicador de actualización más visible
+  const indicador = document.getElementById('puntoTiempoReal');
+  if (indicador) {
+    indicador.classList.add('animate-ping');
+    setTimeout(() => {
+      indicador.classList.remove('animate-ping');
+    }, 1000);
+  }
+  
+  // Solo muestra el loader en la primera carga
+  if (primerCarga) {
+    document.getElementById('reservasTableBody').innerHTML = `
+      <tr>
+        <td colspan="6" class="py-8 text-center">
+          <div class="flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-indigo-500 mb-2"></div>
+            <span class="text-indigo-700 font-semibold">Cargando citas...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  const res = await fetch(scriptURL);
+  const reservas = await res.json();
+  primerCarga = false;
+  reservasGlobal = reservas;
+  
+  // Resto de la función sin cambios...
+  // Recupera la página guardada, si existe
+  const paginaGuardada = parseInt(localStorage.getItem('paginaCitas')) || 1;
+  mostrarPagina(paginaGuardada);
+
+  // Estadísticas rápidas y gráficos...
+  document.getElementById('totalCitas').textContent = reservas.length;
+
+  // Formato de fecha para comparar con hoy (YYYY-MM-DD)
+  const hoy = new Date();
+  const hoyStr = hoy.toISOString().split('T')[0];
+
+  // Citas para hoy con estado "pendiente" o "activo"
+  document.getElementById('citasHoy').textContent = reservas.filter(r => {
+    const estado = (r['Estado'] || '').toLowerCase();
+    const fecha = (r['Fecha'] || '').split('T')[0];
+    return (estado === 'pendiente' || estado === 'activo') && fecha === hoyStr;
+  }).length;
+
+  // Pendientes (todas las que sean "pendiente" o "activo", sin importar fecha)
+  document.getElementById('citasPendientes').textContent = reservas.filter(r => {
+    const estado = (r['Estado'] || '').toLowerCase();
+    return estado === 'pendiente' || estado === 'activo';
+  }).length;
+
+  // Gráfica de servicios más solicitados (responsive)
+  const servicios = {};
+  reservas.forEach(r => {
+    const serv = r['Servicio'] || 'Otro';
+    servicios[serv] = (servicios[serv] || 0) + 1;
+  });
+  const ctxServicios = document.getElementById('serviciosChart').getContext('2d');
+  if (window.serviciosChartInstance) window.serviciosChartInstance.destroy();
+  window.serviciosChartInstance = new Chart(ctxServicios, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(servicios),
+      datasets: [{
+        label: 'Cantidad de Citas',
+        data: Object.values(servicios),
+        backgroundColor: [
+          '#6366f1', '#22d3ee', '#f59e42', '#f43f5e', '#84cc16', '#a21caf', '#facc15'
+        ],
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Servicio',
+            color: '#3730a3',
+            font: { size: 13, weight: 'bold' }
+          },
+          ticks: { color: '#3730a3', font: { weight: 'bold' } }
+        },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Cantidad',
+            color: '#3730a3',
+            font: { size: 13, weight: 'bold' }
+          },
+          ticks: { color: '#3730a3', font: { weight: 'bold' }, stepSize: 1 }
+        }
+      }
+    }
+  });
+
+  // Gráfico de estados de las citas (responsive doughnut)
+  const estados = {};
+  reservas.forEach(r => {
+    const estado = r['Estado'] || 'Otro';
+    estados[estado] = (estados[estado] || 0) + 1;
+  });
+  const ctxEstados = document.getElementById('estadosChart').getContext('2d');
+  if (window.estadosChartInstance) window.estadosChartInstance.destroy();
+  window.estadosChartInstance = new Chart(ctxEstados, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(estados),
+      datasets: [{
+        data: Object.values(estados),
+        backgroundColor: ['#6366f1', '#f59e42', '#22d3ee', '#f43f5e', '#84cc16', '#a21caf', '#facc15'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // Gráfico de citas por día (responsive line)
+  const citasPorDia = {};
+  reservas.forEach(r => {
+    if (r['Fecha']) {
+      const fecha = new Date(r['Fecha']);
+      const fechaStr = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      citasPorDia[fechaStr] = (citasPorDia[fechaStr] || 0) + 1;
+    }
+  });
+  const ctxDias = document.getElementById('diasChart').getContext('2d');
+  if (window.diasChartInstance) window.diasChartInstance.destroy();
+  window.diasChartInstance = new Chart(ctxDias, {
+    type: 'line',
+    data: {
+      labels: Object.keys(citasPorDia),
+      datasets: [{
+        label: 'Citas',
+        data: Object.values(citasPorDia),
+        fill: true,
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99,102,241,0.1)',
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: '#6366f1'
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Gráfico de citas por hora (responsive bar)
+  const citasPorHora = {};
+  reservas.forEach(r => {
+    const hora = r['Hora'] || 'Sin hora';
+    citasPorHora[hora] = (citasPorHora[hora] || 0) + 1;
+  });
+  const ctxHoras = document.getElementById('horasChart').getContext('2d');
+  if (window.horasChartInstance) window.horasChartInstance.destroy();
+  window.horasChartInstance = new Chart(ctxHoras, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(citasPorHora),
+      datasets: [{
+        label: 'Citas',
+        data: Object.values(citasPorHora),
+        backgroundColor: '#f43f5e',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Clientes más frecuentes (top 10)
+  const clientes = {};
+  reservas.forEach(r => {
+    const cliente = r['Nombre Cliente'] || 'Sin nombre';
+    clientes[cliente] = (clientes[cliente] || 0) + 1;
+  });
+  const topClientes = Object.entries(clientes)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  const ctxClientes = document.getElementById('clientesChart').getContext('2d');
+  if (window.clientesChartInstance) window.clientesChartInstance.destroy();
+  window.clientesChartInstance = new Chart(ctxClientes, {
+    type: 'bar',
+    data: {
+      labels: topClientes.map(c => c[0]),
+      datasets: [{
+        label: 'Citas',
+        data: topClientes.map(c => c[1]),
+        backgroundColor: '#22d3ee',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Servicios por Estado (gráfico apilado)
+  const serviciosEstado = {};
+  reservas.forEach(r => {
+    const servicio = r['Servicio'] || 'Otro';
+    const estado = r['Estado'] || 'Otro';
+    if (!serviciosEstado[servicio]) serviciosEstado[servicio] = {};
+    serviciosEstado[servicio][estado] = (serviciosEstado[servicio][estado] || 0) + 1;
+  });
+  const serviciosLabels = Object.keys(serviciosEstado);
+  const estadosLabels = Array.from(new Set(reservas.map(r => r['Estado'] || 'Otro')));
+  const datasets = estadosLabels.map((estado, i) => ({
+    label: estado,
+    data: serviciosLabels.map(servicio => serviciosEstado[servicio][estado] || 0),
+    backgroundColor: ['#6366f1', '#f59e42', '#22d3ee', '#f43f5e', '#84cc16', '#a21caf', '#facc15'][i % 7],
+    borderRadius: 8
+  }));
+  const ctxServiciosEstado = document.getElementById('serviciosEstadoChart').getContext('2d');
+  if (window.serviciosEstadoChartInstance) window.serviciosEstadoChartInstance.destroy();
+  window.serviciosEstadoChartInstance = new Chart(ctxServiciosEstado, {
+    type: 'bar',
+    data: {
+      labels: serviciosLabels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // Gráfico de reservas por mes
+  const reservasPorMes = {};
+  reservas.forEach(r => {
+    if (r['Fecha']) {
+      const fecha = new Date(r['Fecha']);
+      const mes = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+      reservasPorMes[mes] = (reservasPorMes[mes] || 0) + 1;
+    }
+  });
+  const ctxMeses = document.getElementById('mesesChart').getContext('2d');
+  if (window.mesesChartInstance) window.mesesChartInstance.destroy();
+  window.mesesChartInstance = new Chart(ctxMeses, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(reservasPorMes),
+      datasets: [{
+        label: 'Reservas',
+        data: Object.values(reservasPorMes),
+        backgroundColor: '#fb923c',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Gráfico de reservas por año
+  const reservasPorAnio = {};
+  reservas.forEach(r => {
+    if (r['Fecha']) {
+      const fecha = new Date(r['Fecha']);
+      const anio = fecha.getFullYear();
+      reservasPorAnio[anio] = (reservasPorAnio[anio] || 0) + 1;
+    }
+  });
+  const ctxAnios = document.getElementById('aniosChart').getContext('2d');
+  if (window.aniosChartInstance) window.aniosChartInstance.destroy();
+  window.aniosChartInstance = new Chart(ctxAnios, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(reservasPorAnio),
+      datasets: [{
+        label: 'Reservas',
+        data: Object.values(reservasPorAnio),
+        backgroundColor: '#06b6d4',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Gráfico de reservas por día de la semana
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const reservasPorDiaSemana = [0, 0, 0, 0, 0, 0, 0];
+  reservas.forEach(r => {
+    if (r['Fecha']) {
+      const fecha = new Date(r['Fecha']);
+      const dia = fecha.getDay();
+      reservasPorDiaSemana[dia]++;
+    }
+  });
+  const ctxDiasSemana = document.getElementById('diasSemanaChart').getContext('2d');
+  if (window.diasSemanaChartInstance) window.diasSemanaChartInstance.destroy();
+  window.diasSemanaChartInstance = new Chart(ctxDiasSemana, {
+    type: 'bar',
+    data: {
+      labels: diasSemana,
+      datasets: [{
+        label: 'Reservas',
+        data: reservasPorDiaSemana,
+        backgroundColor: '#a3e635',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // === Gráfico de citas por día/mes/año (filtro individual) ===
+  // Renderiza el canvas después del loader
+// === Gráfico de citas por día/mes/año (filtro individual) ===
+// Asegurarse de que el canvas existe
+const contenedor = document.getElementById('contenedorCitasPorDia');
+if (contenedor && !contenedor.querySelector('#diasChart')) {
+  contenedor.innerHTML = `<canvas id="diasChart" class="max-w-full max-h-64"></canvas>`;
+}
+
+// Actualizar el gráfico según el filtro seleccionado
+actualizarGraficoPorPeriodo();
+
+  const filtroDias = document.getElementById('filtroDiasChart')?.value || 'dia';
+  const citasPorPeriodo = {};
+  reservas.forEach(r => {
+    if (r['Fecha']) {
+      const fecha = new Date(r['Fecha']);
+      let clave = '';
+      if (filtroDias === 'dia') {
+        clave = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      } else if (filtroDias === 'mes') {
+        clave = fecha.toLocaleDateString('es-ES', { month: '2-digit', year: 'numeric' });
+      } else if (filtroDias === 'anio') {
+        clave = fecha.getFullYear().toString();
+      }
+      citasPorPeriodo[clave] = (citasPorPeriodo[clave] || 0) + 1;
+    }
+  });
+
+  // Contador de citas completadas - Corregir esta sección que causa el error
+  const completadas = reservas.filter(r => {
+    const estado = (r['Estado'] || '').toLowerCase();
+    return estado === 'completada';
+  }).length;
+
+  const canceladas = reservas.filter(r => {
+    const estado = (r['Estado'] || '').toLowerCase();
+    return estado === 'cancelada';
+  }).length;
+
+  // Actualizar contadores
+  document.getElementById('citasCompletadas').textContent = completadas;
+  document.getElementById('citasCanceladas').textContent = canceladas;
+}
+
+function mostrarPagina(pagina) {
+  paginaActual = pagina;
+  localStorage.setItem('paginaCitas', pagina);
+  const tbody = document.getElementById('reservasTableBody');
+  tbody.innerHTML = '';
+  const inicio = (pagina - 1) * FILAS_POR_PAGINA;
+  const fin = inicio + FILAS_POR_PAGINA;
+  
+  // Filtra solo las citas activas o pendientes
+  const citasVisibles = reservasGlobal.filter(r => {
+    const estado = (r['Estado'] || '').toLowerCase();
+    return estado !== 'completada' && estado !== 'cancelada';
+  });
+  
+  if (citasVisibles.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="py-8 text-center">
+          <div class="flex flex-col items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-indigo-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span class="text-indigo-700 font-semibold text-lg">No hay citas pendientes</span>
+            <p class="text-gray-500 mt-1">Las citas aparecerán aquí una vez programadas</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  citasVisibles.slice(inicio, fin).forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = "transition hover:bg-indigo-50/50";
+    
+    // Obtener la fecha actual para comparar
+    const hoy = new Date();
+    const fechaCita = new Date(r['Fecha']);
+    const esHoy = fechaCita.toDateString() === hoy.toDateString();
+    
+    tr.innerHTML = `
+      <td class="px-6 py-4">
+        <div class="flex items-center">
+          <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold mr-3">
+            ${r['Nombre Cliente']?.charAt(0).toUpperCase() || '?'}
+          </div>
+          <span class="font-medium text-gray-900">${r['Nombre Cliente'] || ''}</span>
+        </div>
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2z" />
+          </svg>
+          ${r['Fecha'] ? (new Date(r['Fecha'])).toLocaleDateString('es-ES') : ''}
+          ${esHoy ? '<span class="ml-2 px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-bold rounded-full">HOY</span>' : ''}
+        </div>
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          ${r['Hora'] || ''}
+        </div>
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          ${r['Servicio'] || ''}
+        </div>
+      </td>
+      <td class="px-6 py-4">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${getEstadoColor(r['Estado'])}">
+          ${r['Estado'] || ''}
+        </span>
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex space-x-2 justify-center">
+          <button onclick="verDetalle(${reservasGlobal.indexOf(r)})" 
+            class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:shadow flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            Ver
+          </button>
+          <button onclick="finalizarCitaDirecto(${reservasGlobal.indexOf(r)})" 
+            class="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:shadow flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Completar
+          </button>
+          <button onclick="cancelarCitaDirecto(${reservasGlobal.indexOf(r)})" 
+            class="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:shadow flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancelar
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  renderPaginacion();
+}
+
+function renderPaginacion() {
+  const totalPaginas = Math.ceil(reservasGlobal.length / FILAS_POR_PAGINA);
+  const paginacion = document.getElementById('paginacionCitas');
+  paginacion.innerHTML = '';
+
+  // Solo muestra la paginación si hay más de 1 página
+  if (totalPaginas > 1) {
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.className = `px-3 py-1 rounded font-bold border ${paginaActual === i ? 'bg-indigo-500 text-white' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100'} transition`;
+      btn.onclick = () => mostrarPagina(i);
+      paginacion.appendChild(btn);
+    }
+  }
+}
+
+function getEstadoColor(estado) {
+  estado = (estado || '').toLowerCase();
+  if (estado === 'pendiente') return 'bg-yellow-100 text-yellow-700';
+  if (estado === 'activo' || estado === 'confirmada') return 'bg-green-100 text-green-700';
+  if (estado === 'cancelada') return 'bg-red-100 text-red-700';
+  if (estado === 'completada') return 'bg-blue-100 text-blue-700';
+  return 'bg-gray-100 text-gray-700';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  cargarReservas();
+  tiempoRealIntervalo = setInterval(cargarReservas, INTERVALO_ACTUALIZACION);
+});
+
+function verDetalle(idx) {
+  const r = reservasGlobal[idx];
+  const detalle = `
+    <div><b>Cliente:</b> ${r['Nombre Cliente'] || ''}</div>
+    <div><b>Teléfono:</b> ${r['Numero'] || ''}</div>
+    <div><b>Fecha:</b> ${r['Fecha'] ? (new Date(r['Fecha'])).toLocaleDateString('es-ES') : ''}</div>
+    <div><b>Hora:</b> ${r['Hora'] || ''}</div>
+    <div><b>Servicio:</b> ${r['Servicio'] || ''}</div>
+    <div><b>Estado:</b> <span id="estadoDetalle">${r['Estado'] || ''}</span></div>
+    <div><b>Notas:</b> ${r['Nota'] || ''}</div>
+    <div><b>ID:</b> ${r['ID'] || ''}</div>
+  `;
+  document.getElementById('detalleContenido').innerHTML = detalle;
+  document.getElementById('detalleModal').classList.remove('hidden');
+
+  // Finalizar cita con confirmación
+  document.getElementById('finalizarCitaBtn').onclick = () => {
+    document.getElementById('confirmFinishInfo').innerHTML = `
+      <div><b>Cliente:</b> ${r['Nombre Cliente'] || ''}</div>
+      <div><b>Teléfono:</b> ${r['Numero'] || ''}</div>
+      <div><b>Fecha:</b> ${r['Fecha'] ? (new Date(r['Fecha'])).toLocaleDateString('es-ES') : ''}</div>
+      <div><b>Hora:</b> ${r['Hora'] || ''}</div>
+      <div><b>Servicio:</b> ${r['Servicio'] || ''}</div>
+    `;
+    document.getElementById('confirmFinishModal').classList.remove('hidden');
+
+    // Botón NO
+    document.getElementById('cancelarConfirmFinish').onclick = () => {
+      document.getElementById('confirmFinishModal').classList.add('hidden');
+    };
+
+    // Botón SÍ
+    document.getElementById('aceptarConfirmFinish').onclick = async () => {
+      // Mostrar indicador de carga
+      document.getElementById('aceptarConfirmFinish').innerHTML = `
+        <div class="flex items-center">
+          <svg class="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Procesando...
+        </div>
+      `;
+      
+      const r = reservasGlobal[idx];
+      const resultado = await cambiarEstadoCita(r['ID'], 'Completada');
+      
+      if (resultado) {
+        document.getElementById('confirmFinishModal').classList.add('hidden');
+        document.getElementById('detalleModal').classList.add('hidden');
+        mostrarNotificacion(`La cita de ${r['Nombre Cliente']} ha sido finalizada exitosamente`, 'success');
+        cargarReservas();
+      } else {
+        document.getElementById('aceptarConfirmFinish').textContent = "Sí, finalizar cita";
+      }
+    };
+  };
+
+  // Cancelar cita con confirmación (ya lo tienes)
+  document.getElementById('cancelarCitaBtn').onclick = () => {
+    document.getElementById('confirmCancelInfo').innerHTML = `
+      <div><b>Cliente:</b> ${r['Nombre Cliente'] || ''}</div>
+      <div><b>Teléfono:</b> ${r['Numero'] || ''}</div>
+      <div><b>Fecha:</b> ${r['Fecha'] ? (new Date(r['Fecha'])).toLocaleDateString('es-ES') : ''}</div>
+      <div><b>Hora:</b> ${r['Hora'] || ''}</div>
+      <div><b>Servicio:</b> ${r['Servicio'] || ''}</div>
+    `;
+    document.getElementById('confirmCancelModal').classList.remove('hidden');
+
+    document.getElementById('cancelarConfirmCancel').onclick = () => {
+      document.getElementById('confirmCancelModal').classList.add('hidden');
+    };
+
+    document.getElementById('aceptarConfirmCancel').onclick = async () => {
+      // Mostrar indicador de carga
+      document.getElementById('aceptarConfirmCancel').innerHTML = `
+        <div class="flex items-center">
+          <svg class="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Procesando...
+        </div>
+      `;
+      
+      const r = reservasGlobal[idx];
+      const resultado = await cambiarEstadoCita(r['ID'], 'Cancelada');
+      
+      if (resultado) {
+        document.getElementById('confirmCancelModal').classList.add('hidden');
+        document.getElementById('detalleModal').classList.add('hidden');
+        mostrarNotificacion(`La cita de ${r['Nombre Cliente']} ha sido cancelada`, 'success');
+        cargarReservas();
+      } else {
+        document.getElementById('aceptarConfirmCancel').textContent = "Sí, cancelar cita";
+      }
+    };
+  };
+}
+
+// Función para cambiar el estado de una cita (completada/cancelada)
+async function cambiarEstadoCita(id, nuevoEstado) {
+  try {
+    const params = new URLSearchParams();
+    params.append('ID', id);
+    params.append('accion', 'cambiarEstado');
+    params.append('nuevoEstado', nuevoEstado);
+
+    const response = await fetch(estadoScriptURL, {
+      method: 'POST',
+      body: params
+    });
+    const result = await response.json();
+    console.log("Respuesta cambio de estado:", result);
+    
+    if (result.result === 'success' || result.result === 'estado actualizado') {
+      mostrarNotificacion(`La cita ha sido ${nuevoEstado === 'Completada' ? 'completada' : 'cancelada'} correctamente`, 'success');
+      return true;
+    } else {
+      mostrarNotificacion('No se pudo actualizar el estado de la cita', 'error');
+      return false;
+    }
+  } catch (err) {
+    console.error("Error al cambiar estado:", err);
+    mostrarNotificacion('Error al conectar con el servidor', 'error');
+    return false;
+  }
+}
+
+// Mejora de la función mostrarNotificacion
+function mostrarNotificacion(mensaje, tipo = 'success') {
+  // Comprobar si ya existe una notificación y eliminarla
+  const existentes = document.querySelectorAll('.notificacion-toast');
+  existentes.forEach(n => n.remove());
+  
+  // Crear la notificación dinámicamente
+  const notificacion = document.createElement('div');
+  notificacion.className = `notificacion-toast fixed bottom-4 right-4 bg-white/95 backdrop-blur-md border rounded-xl shadow-xl p-4 flex items-center gap-3 transform transition-all duration-300 z-[9999]`;
+  
+  // Determinar colores según el tipo
+  let iconColor, bgColor, borderColor, iconPath;
+  if (tipo === 'success') {
+    iconColor = 'text-green-600';
+    bgColor = 'bg-green-100';
+    borderColor = 'border-green-300';
+    iconPath = 'M5 13l4 4L19 7';
+  } else if (tipo === 'error') {
+    iconColor = 'text-red-600';
+    bgColor = 'bg-red-100';
+    borderColor = 'border-red-300';
+    iconPath = 'M6 18L18 6M6 6l12 12';
+  } else {
+    iconColor = 'text-blue-600';
+    bgColor = 'bg-blue-100';
+    borderColor = 'border-blue-300';
+    iconPath = 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+  }
+  
+  notificacion.classList.add(borderColor);
+  
+  notificacion.innerHTML = `
+    <div class="w-10 h-10 rounded-full ${bgColor} flex items-center justify-center flex-shrink-0">
+      <svg class="w-6 h-6 ${iconColor}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}" />
+      </svg>
+    </div>
+    <div class="flex-1">
+      <h4 class="font-semibold text-gray-900">${tipo === 'success' ? '¡Operación exitosa!' : tipo === 'error' ? 'Error' : 'Información'}</h4>
+      <p class="text-sm text-gray-600">${mensaje}</p>
+    </div>
+    <button class="ml-auto text-gray-400 hover:text-gray-500 p-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  `;
+  
+  // Animación de entrada
+  notificacion.style.opacity = '0';
+  notificacion.style.transform = 'translateY(20px)';
+  
+  // Agregar al DOM
+  document.body.appendChild(notificacion);
+  
+  // Forzar recálculo de estilos para que la animación funcione
+  void notificacion.offsetWidth;
+  
+  // Aplicar animación
+  notificacion.style.opacity = '1';
+  notificacion.style.transform = 'translateY(0)';
+  
+  // Configurar evento para cerrar
+  notificacion.querySelector('button').addEventListener('click', () => {
+    notificacion.style.opacity = '0';
+    notificacion.style.transform = 'translateY(20px)';
+    setTimeout(() => notificacion.remove(), 300);
+  });
+  
+  // Auto cerrar después de 5 segundos
+  setTimeout(() => {
+    if (document.body.contains(notificacion)) {
+      notificacion.style.opacity = '0';
+      notificacion.style.transform = 'translateY(20px)';
+      setTimeout(() => notificacion.remove(), 300);
+    }
+  }, 5000);
+}
+
+// Función para finalizar una cita directamente desde la tabla
+function finalizarCitaDirecto(idx) {
+  const r = reservasGlobal[idx];
+  document.getElementById('confirmFinishInfo').innerHTML = `
+    <div><b>Cliente:</b> ${r['Nombre Cliente'] || ''}</div>
+    <div><b>Teléfono:</b> ${r['Numero'] || ''}</div>
+    <div><b>Fecha:</b> ${r['Fecha'] ? (new Date(r['Fecha'])).toLocaleDateString('es-ES') : ''}</div>
+    <div><b>Hora:</b> ${r['Hora'] || ''}</div>
+    <div><b>Servicio:</b> ${r['Servicio'] || ''}</div>
+  `;
+  document.getElementById('confirmFinishModal').classList.remove('hidden');
+
+  // Texto original del botón para restaurar después
+  const botonAceptar = document.getElementById('aceptarConfirmFinish');
+  const botonAceptarTextoOriginal = botonAceptar.innerHTML;
+  
+  // Botón NO
+  document.getElementById('cancelarConfirmFinish').onclick = () => {
+    document.getElementById('confirmFinishModal').classList.add('hidden');
+  };
+
+  // Botón SÍ
+  botonAceptar.onclick = async () => {
+    // Mostrar indicador de carga
+    botonAceptar.innerHTML = `
+      <div class="flex items-center">
+        <svg class="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Procesando...
+      </div>
+    `;
+    
+    const resultado = await cambiarEstadoCita(r['ID'], 'Completada');
+    
+    if (resultado) {
+      document.getElementById('confirmFinishModal').classList.add('hidden');
+      document.getElementById('detalleModal').classList.add('hidden');
+      mostrarNotificacion(`La cita de ${r['Nombre Cliente']} ha sido finalizada exitosamente`, 'success');
+      cargarReservas();
+    } else {
+      // Restaurar el texto original del botón si hay error
+      botonAceptar.innerHTML = botonAceptarTextoOriginal;
+      mostrarNotificacion("No se pudo finalizar la cita. Intente nuevamente.", "error");
+    }
+  };
+}
+
+function cancelarCitaDirecto(idx) {
+  const r = reservasGlobal[idx];
+  document.getElementById('confirmCancelInfo').innerHTML = `
+    <div><b>Cliente:</b> ${r['Nombre Cliente'] || ''}</div>
+    <div><b>Teléfono:</b> ${r['Numero'] || ''}</div>
+    <div><b>Fecha:</b> ${r['Fecha'] ? (new Date(r['Fecha'])).toLocaleDateString('es-ES') : ''}</div>
+    <div><b>Hora:</b> ${r['Hora'] || ''}</div>
+    <div><b>Servicio:</b> ${r['Servicio'] || ''}</div>
+  `;
+  document.getElementById('confirmCancelModal').classList.remove('hidden');
+
+  // Texto original del botón para restaurar después
+  const botonAceptar = document.getElementById('aceptarConfirmCancel');
+  const botonAceptarTextoOriginal = botonAceptar.innerHTML;
+
+  document.getElementById('cancelarConfirmCancel').onclick = () => {
+    document.getElementById('confirmCancelModal').classList.add('hidden');
+  };
+
+  botonAceptar.onclick = async () => {
+    // Mostrar indicador de carga
+    botonAceptar.innerHTML = `
+      <div class="flex items-center">
+        <svg class="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Procesando...
+      </div>
+    `;
+    
+    try {
+      const resultado = await cambiarEstadoCita(r['ID'], 'Cancelada');
+      
+      if (resultado) {
+        document.getElementById('confirmCancelModal').classList.add('hidden');
+        document.getElementById('detalleModal').classList.add('hidden');
+        mostrarNotificacion(`La cita de ${r['Nombre Cliente']} ha sido cancelada`, 'success');
+        cargarReservas();
+      } else {
+        // Restaurar el texto original del botón si hay error
+        botonAceptar.innerHTML = botonAceptarTextoOriginal;
+        mostrarNotificacion("No se pudo cancelar la cita. Intente nuevamente.", "error");
+      }
+    } catch (error) {
+      console.error("Error al cancelar cita:", error);
+      botonAceptar.innerHTML = botonAceptarTextoOriginal;
+      mostrarNotificacion("Error al procesar la solicitud. Intente nuevamente.", "error");
+    }
+  };
+}
+
+// Corrige el evento de cierre del modal de detalle
+document.getElementById('cerrarDetalle').onclick = () => {
+  document.getElementById('detalleModal').classList.add('hidden');
+}
+
+// Asegúrate que el botón Cerrar en el modal de detalle de cita funcione
+document.querySelectorAll('.cerrar-modal-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const modalId = this.closest('[id$="Modal"]').id;
+    document.getElementById(modalId).classList.add('hidden');
+  });
+});
+
+// Añadir evento específico para el botón Cerrar en el modal de detalle
+document.getElementById('cerrarDetalle') && document.getElementById('cerrarDetalle').addEventListener('click', function() {
+  document.getElementById('detalleModal').classList.add('hidden');
+});
+
+// Sistema de carga diferida para gráficos usando Intersection Observer
+if (!window.chartObserverInitialized) {
+  window.chartObserverInitialized = true;
+  window.chartInstances = new Map();
+  
+  const options = {
+    root: null,
+    rootMargin: '200px',
+    threshold: 0.1
+  };
+  
+  function handleIntersection(entries, observer) {
+    entries.forEach(entry => {
+      const container = entry.target;
+      const canvas = container.querySelector('canvas');
+      if (!canvas) return;
+      
+      const chartId = canvas.id;
+      
+      if (entry.isIntersecting) {
+        // Solo recrear si ha sido destruido previamente
+        const chartInstance = window[`${chartId}Instance`];
+        if ((!chartInstance || chartInstance.destroyed) && window.chartInstances.has(chartId)) {
+          const savedChart = window.chartInstances.get(chartId);
+          if (savedChart && savedChart.config) {
+            const ctx = canvas.getContext('2d');
+            window[`${chartId}Instance`] = new Chart(ctx, {
+              type: savedChart.config.type,
+              data: savedChart.data,
+              options: savedChart.config.options
+            });
+          }
+        }
+      } else {
+        // Guardar y destruir
+        const chartInstance = window[`${chartId}Instance`];
+        if (chartInstance && !chartInstance.destroyed) {
+          window.chartInstances.set(chartId, {
+            config: chartInstance.config,
+            data: chartInstance.data
+          });
+          chartInstance.destroy();
+        }
+      }
+    });
+  }
+  
+  const observer = new IntersectionObserver(handleIntersection, options);
+  
+  function observeCharts() {
+    document.querySelectorAll('.chart-container').forEach(container => {
+      observer.observe(container);
+    });
+  }
+  
+  // Observar al cargar el documento
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('div[class*="bg-white"]').forEach(container => {
+      if (container.querySelector('canvas')) {
+        container.classList.add('chart-container');
+      }
+    });
+    
+    observeCharts();
+    
+    // Original cargarReservas reference
+    const originalCargarReservas = window.cargarReservas;
+    if (originalCargarReservas) {
+      window.cargarReservas = async function() {
+        await originalCargarReservas.apply(this, arguments);
+        observeCharts();
+      };
+    }
+  });
+}
+
+// Agregar esta función justo después del evento DOMContentLoaded al final del archivo
+// (antes del cierre de </script>)
+
+<script>
+function actualizarGraficoPorPeriodo() {
+  const filtroDias = document.getElementById('filtroDiasChart')?.value || 'dia';
+  const citasPorPeriodo = {};
+  
+  // Obtener datos filtrados según el período seleccionado
+  reservasGlobal.forEach(r => {
+    if (r['Fecha']) {
+      const fecha = new Date(r['Fecha']);
+      let clave = '';
+      
+      if (filtroDias === 'dia') {
+        clave = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      } else if (filtroDias === 'mes') {
+        clave = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      } else if (filtroDias === 'anio') {
+        clave = fecha.getFullYear().toString();
+      }
+      
+      citasPorPeriodo[clave] = (citasPorPeriodo[clave] || 0) + 1;
+    }
+  });
+  
+  // Obtener el contexto del canvas existente
+  const ctx = document.getElementById('diasChart')?.getContext('2d');
+  if (!ctx) return;
+  
+  // Destruir el gráfico anterior si existe
+  if (window.diasChartInstance && !window.diasChartInstance.destroyed) {
+    window.diasChartInstance.destroy();
+  }
+  
+  // Crear el nuevo gráfico con los datos filtrados
+  window.diasChartInstance = new Chart(ctx, {
+    type: filtroDias === 'dia' ? 'line' : 'bar',
+    data: {
+      labels: Object.keys(citasPorPeriodo),
+      datasets: [{
+        label: 'Citas',
+        data: Object.values(citasPorPeriodo),
+        fill: filtroDias === 'dia',
+        borderColor: '#6366f1',
+        backgroundColor: filtroDias === 'dia' ? 'rgba(99,102,241,0.1)' : '#f59e42',
+        tension: 0.4,
+        pointRadius: filtroDias === 'dia' ? 5 : 0,
+        pointBackgroundColor: '#6366f1',
+        borderRadius: filtroDias !== 'dia' ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 500
+      },
+      plugins: { 
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+// Agregar este código para manejar el evento de cambio en el filtro
+document.addEventListener('DOMContentLoaded', () => {
+  // Añadir evento al selector de filtro
+  document.getElementById('filtroDiasChart')?.addEventListener('change', function() {
+    // Actualizar el título según la selección
+    const titulo = document.getElementById('tituloCitasPorDia');
+    if (titulo) {
+      switch (this.value) {
+        case 'dia':
+          titulo.textContent = 'Citas por Día';
+          break;
+        case 'mes':
+          titulo.textContent = 'Citas por Mes';
+          break;
+        case 'anio':
+          titulo.textContent = 'Citas por Año';
+          break;
+      }
+    }
+    
+    // Actualizar el gráfico
+    actualizarGraficoPorPeriodo();
+  });
+});
+  </script>
+</body>
+</html>
+
