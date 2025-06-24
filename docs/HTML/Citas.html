@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Óptica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+  <style>
+  /* Animaciones y efectos */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+  
+  @keyframes bounceIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    80% { transform: scale(0.95);}
+    100% { transform: scale(1);}
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+  
+  @keyframes bellRing {
+    0% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-15deg); }
+    30% { transform: rotate(15deg); }
+    40% { transform: rotate(-15deg); }
+    50% { transform: rotate(0); }
+    100% { transform: rotate(0); }
+  }
+  
+  .animate-fadeIn { animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1) both; }
+  .animate-bounceIn { animation: bounceIn 0.7s cubic-bezier(.4,0,.2,1) both; }
+  .bell-animation { animation: bellRing 1s ease; }
+  
+  /* Estilos para las tarjetas de citas */
+  #citasContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 1.5rem;
+  }
+  
+  /* Estilos para cada tarjeta con efectos hover */
+  #citasContainer > div {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    position: relative;
+    min-height: 220px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    border-radius: 0.75rem;
+  }
+  
+  /* Efectos hover para tarjetas */
+  #citasContainer > div:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(79, 70, 229, 0.2);
+  }
+  
+  /* Estado hover para los botones de acción */
+  .action-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .action-btn:hover {
+    transform: translateY(-2px);
+  }
+  
+  .action-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn:active {
+    transform: translateY(0);
+  }
+  
+  /* Efecto para el botón Ver más/menos */
+  .ver-mas-btn {
+    transition: all 0.2s ease;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .ver-mas-btn:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+    color: #4338ca;
+  }
+  
+  /* Destaque para información importante al pasar el mouse */
+  .info-highlight:hover {
+    color: #4338ca;
+    font-weight: 500;
+  }
+  
+  /* Efectos para el panel expandible */
+  [id^="info-detalle-"] {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top center;
+    border-radius: 0.5rem;
+  }
+  
+  /* Efecto de destacado en información adicional */
+  .detalle-info-row {
+    padding: 0.25rem 0;
+    transition: all 0.2s ease;
+    border-radius: 0.25rem;
+  }
+  
+  .detalle-info-row:hover {
+    background-color: rgba(79, 70, 229, 0.05);
+    padding-left: 0.5rem;
+  }
+  
+  /* Estilos para el panel de notificaciones */
+  #notificationsPanel {
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 
+                0 10px 10px -5px rgba(0,0,0,0.04);
+    transform-origin: top right;
+    transition: all 0.3s ease;
+  }
+
+  .notification-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+  }
+  
+  #realtimeIndicator .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Añade este CSS a la sección de estilos existente */
+#realtimeIndicator {
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+#realtimeIndicator:hover {
+  opacity: 1;
+}
+
+#realtimeIndicator .rounded-full {
+  width: 0.4rem;
+  height: 0.4rem;
+  transition: all 0.3s ease;
+}
+
+.updated-content {
+  position: relative;
+}
+
+.updated-content::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(79, 70, 229, 0.03);
+  border-radius: 0.5rem;
+  animation: fadeUpdateIndicator 1s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeUpdateIndicator {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+  
+  </style>
+
+
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <!-- Sidebar para escritorio y móvil -->
+<aside id="sidebar"
+  class="bg-gradient-to-b from-[#4fd3e6] to-[#22325a] text-white w-64 flex-shrink-0 flex-col shadow-lg sticky top-0 h-screen z-30 transition-transform duration-300 hidden md:flex">
+  <div class="p-6 flex flex-col items-center">
+    <div class="bg-white rounded-full p-0 mb-4 shadow-lg w-28 h-28 flex items-center justify-center border-4 border-indigo-200">
+      <img src="/Imagenes/redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-24 w-24 object-cover rounded-full">
+    </div>
+    <h2 class="text-3xl font-extrabold mb-8 tracking-wide text-center" style="color:#22325a;">
+  Centro Óptico González
+</h2>
+    <nav class="space-y-2 w-full">
+      <a href="Index.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📊</span> <span>Dashboard</span>
+      </a>
+      <a href="/HTML/Citas.html" class="flex items-center gap-3 py-2 px-4 rounded-lg bg-indigo-800 hover:bg-indigo-600 transition font-semibold shadow hover:scale-105">
+        <span class="text-xl">📅</span> <span>Citas</span>
+      </a>
+      <a href="/HTML/CarteraDeClientes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">👤</span> <span>Clientes</span>
+      </a>
+      <a href="/HTML/Reportes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📈</span> <span>Reportes</span>
+      </a>
+      <a href="/HTML/Configuracion.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">⚙️</span> <span>Configuración</span>
+      </a>
+    </nav>
+  </div>
+  <div class="mt-auto p-4 text-xs text-indigo-200 text-center">
+    &copy; 2025 Centro Óptico González
+  </div>
+</aside>
+
+<!-- Sidebar móvil (oculto en escritorio) -->
+<div id="sidebarMobileBackdrop" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden"></div>
+<aside id="sidebarMobile"
+  class="fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-indigo-900 to-indigo-700 text-white shadow-lg z-50 transform -translate-x-full transition-transform duration-300 flex flex-col md:hidden">
+  <div class="p-6 flex flex-col items-center">
+    <button id="closeSidebarMobile" class="absolute top-4 right-4 text-white text-2xl focus:outline-none">&times;</button>
+    <div class="bg-white rounded-full p-0 mb-4 shadow-lg w-28 h-28 flex items-center justify-center border-4 border-indigo-200">
+      <img src="/Imagenes/redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-24 w-24 object-cover rounded-full">
+    </div>
+    <h2 class="text-2xl font-bold mb-8 tracking-wide text-center">Óptica Elegante</h2>
+    <nav class="space-y-2 w-full">
+      <a href="Index.html" class="flex items-center gap-3 py-2 px-4 rounded-lg bg-indigo-800 hover:bg-indigo-600 transition font-semibold shadow hover:scale-105">
+        <span class="text-xl">📊</span> <span>Dashboard</span>
+      </a>
+      <a href="/HTML/Citas.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📅</span> <span>Citas</span>
+      </a>
+      <a href="/HTML/CarteraDeClientes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">👤</span> <span>Clientes</span>
+      </a>
+      <a href="/HTML/Reportes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">📈</span> <span>Reportes</span>
+      </a>
+      <a href="/HTML/Configuracion.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+        <span class="text-xl">⚙️</span> <span>Configuración</span>
+      </a>
+    </nav>
+  </div>
+  <div class="mt-auto p-4 text-xs text-indigo-200 text-center">
+    &copy; 2025 Óptica Elegante
+  </div>
+</aside>
+
+<!-- Botón toggle para móviles -->
+<div class="md:hidden fixed top-4 left-4 z-50">
+  <button id="sidebarToggle" class="bg-indigo-800 text-white p-2 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-white transition-opacity duration-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+</div>
+
+    <!-- Contenido principal -->
+    <div class="flex-1 flex flex-col">
+      <header class="bg-white/80 shadow p-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center sticky top-0 z-10 backdrop-blur">
+  <div class="flex items-center">
+    <h1 class="text-2xl font-bold text-indigo-800 tracking-wide text-center">Dashboard de Citas</h1>
+    <div id="realtimeIndicator" class="flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full ml-3 border border-green-200">
+      <span class="w-2 h-2 rounded-full bg-green-500 mr-1 animate-pulse"></span>
+      <span>Tiempo real</span>
+    </div>
+  </div>
+  
+  <div class="flex gap-3 w-full sm:w-auto flex-col sm:flex-row items-center">
+    <!-- Campanita de notificaciones -->
+    <div class="relative">
+      <button id="notificationBell" class="p-2 rounded-full hover:bg-gray-100 relative transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <span id="notificationCount" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+      </button>
+      <!-- Panel de notificaciones (inicialmente oculto) -->
+      <div id="notificationsPanel" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg overflow-hidden hidden z-50 transform origin-top-right transition-all">
+        <div class="p-3 bg-indigo-50 border-b border-gray-200 flex justify-between items-center">
+          <h3 class="font-semibold text-indigo-700">Notificaciones</h3>
+          <div class="flex gap-2">
+            <button id="verHistorialBtn" class="text-xs bg-indigo-100 px-2 py-1 rounded text-indigo-700 hover:bg-indigo-200">
+              Ver historial
+            </button>
+            <button id="clearAllNotifications" class="text-xs text-indigo-600 hover:text-indigo-800">
+              Limpiar todo
+            </button>
+          </div>
+        </div>
+        <div id="notificationsContainer" class="max-h-72 overflow-y-auto">
+          <!-- Las notificaciones se cargarán aquí dinámicamente -->
+          <div class="p-4 text-center text-gray-500 text-sm">No hay notificaciones nuevas</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="relative">
+      <input type="text" id="searchInput" placeholder="Buscar por ID o nombre..." class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+      <button id="clearSearchBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">✕</button>
+    </div>
+
+    <!-- Agregar filtro de fecha aquí -->
+    <div class="relative">
+      <div class="flex items-center">
+        <input type="text" id="dateFilter" placeholder="Filtrar por fecha" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+        <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
+          <button id="clearDateBtn" class="text-gray-400 hover:text-gray-600 hidden">✕</button>
+          <span class="text-indigo-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative">
+      <select id="dateRangeFilter" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-300 appearance-none pr-8 bg-white">
+        <option value="">Todas las citas</option>
+        <option value="today">Hoy</option>
+        <option value="tomorrow">Mañana</option>
+        <option value="week">Esta semana</option>
+        <option value="month">Este mes</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <button id="addReservationBtn"
+      class="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-indigo-400 text-white px-6 py-2 rounded-lg shadow hover:from-indigo-700 hover:to-indigo-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 font-semibold text-base sm:text-lg">
+      + Nueva Cita
+    </button>
+  </div>
+</header>
+
+<!-- Contenedor principal con grid 3x3 -->
+<div class="p-6 flex flex-col gap-6">
+  <!-- Contenedor de cartas con grid fijo de 3x3 -->
+  <div id="citasContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  
+  <!-- Paginación -->
+  <div class="flex justify-center items-center gap-2 mt-4" id="paginationContainer">
+    <!-- Aquí se generarán los botones de paginación -->
+  </div>
+</div>
+    </div>
+  </div>
+
+  <script>
+// Inicializar variables globales al inicio del script
+
+// Definiciones básicas necesarias
+let filteredCitas = [];
+let currentPage = 1;
+const CARDS_PER_PAGE = 9; // Número de tarjetas por página
+
+// Reemplazar el array de citas de prueba con un array vacío
+const citas = []; // Ya no usaremos datos de prueba fijos
+
+// Modificar la función cargarCitas para usar solo datos reales
+async function cargarCitas() {
+  try {
+    // Mostrar indicador de carga
+    const container = document.getElementById('citasContainer');
+    container.innerHTML = `
+      <div class="col-span-full flex justify-center items-center p-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <span class="ml-3 text-indigo-600 font-medium">Cargando citas...</span>
+      </div>
+    `;
+
+    const response = await fetch('https://script.google.com/macros/s/AKfycbw1-cfR6G6yWq9WD3I78L8-qt_Rj7UnPGxBeMoBBlsEg6AzG456EMd2U1yH3k3uO1if/exec');
+    
+    if (!response.ok) {
+      throw new Error(`Error de red: ${response.status}`);
+    }
+    
+    const todasCitas = await response.json();
+    
+    // Verificar si recibimos datos reales
+    if (!Array.isArray(todasCitas) || todasCitas.length === 0) {
+      throw new Error('No se recibieron datos válidos');
+    }
+    
+    console.log(`Se han cargado ${todasCitas.length} citas desde el servidor`);
+    
+    // Filtra solo las citas con estado "Activo" o "Pendiente"
+    todasLasCitas = todasCitas.filter(cita => 
+      cita.Estado === 'Activo' || cita.Estado === 'Pendiente'
+    );
+    
+    // Reset a página 1
+    currentPage = 1;
+    renderCitas(todasLasCitas, 1);
+    
+    return todasLasCitas; // Devolver las citas cargadas
+  } catch (error) {
+    console.error('Error al cargar citas:', error);
+    mostrarNotificacion('Error al cargar datos. Intentando más tarde...', 'error');
+    
+    // Si hay error, NO usar los datos de ejemplo
+    todasLasCitas = []; // Array vacío en lugar de usar citas locales
+    
+    // Mostrar el error en la interfaz
+    const container = document.getElementById('citasContainer');
+    container.innerHTML = `
+      <div class="col-span-full p-8 text-center">
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-red-700">Error al cargar los datos del servidor</p>
+          </div>
+          <p class="text-sm text-red-600 mt-2">Se intentará cargar nuevamente en breve</p>
+        </div>
+        <button id="retryLoadBtn" class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">
+          Reintentar ahora
+        </button>
+      </div>
+    `;
+    
+    // Botón para reintentar la carga
+    document.getElementById('retryLoadBtn')?.addEventListener('click', () => {
+      cargarCitas();
+    });
+    
+    // Programar un reintento automático después de 30 segundos
+    setTimeout(() => {
+      cargarCitas();
+    }, 30000);
+    
+    return todasLasCitas;
+  }
+}
+
+// Cambiar la inicialización para usar un array vacío como punto de partida
+let todasLasCitas = [];
+
+// Inicializa el buscador y carga las citas (una sola vez)
+initSearchListeners();
+
+// Lógica para el botón de agregar cita (redirige a la página de nueva cita o abre modal)
+document.getElementById('addReservationBtn').addEventListener('click', () => {
+  // Aquí iría tu lógica para abrir el modal de nueva cita
+  // Por ahora abrimos uno simulado
+  mostrarNotificacion('Funcionalidad Nueva Cita por implementar');
+});
+
+// Lógica para el sidebar móvil
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  document.getElementById('sidebarMobile').classList.remove('-translate-x-full');
+  document.getElementById('sidebarMobileBackdrop').classList.remove('hidden');
+});
+
+document.getElementById('closeSidebarMobile').addEventListener('click', () => {
+  document.getElementById('sidebarMobile').classList.add('-translate-x-full');
+  document.getElementById('sidebarMobileBackdrop').classList.add('hidden');
+});
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo = 'exito') {
+  // Elimina notificación anterior si existe
+  const notificacionExistente = document.getElementById('notificacion');
+  if (notificacionExistente) {
+    notificacionExistente.remove();
+  }
+  
+  // Crea nueva notificación
+  const notificacion = document.createElement('div');
+  notificacion.id = 'notificacion';
+  notificacion.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg animate-bounceIn
+    ${tipo === 'exito' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+  notificacion.textContent = mensaje;
+  
+  // Agrega botón para cerrar
+  const cerrarBtn = document.createElement('button');
+  cerrarBtn.className = 'ml-3 font-bold';
+  cerrarBtn.textContent = '✕';
+  cerrarBtn.onclick = () => notificacion.remove();
+  notificacion.appendChild(cerrarBtn);
+  
+  // Agrega al DOM
+  document.body.appendChild(notificacion);
+  
+  // Autocierra después de 3 segundos
+  setTimeout(() => {
+    if (document.body.contains(notificacion)) {
+      notificacion.style.opacity = '0';
+      notificacion.style.transform = 'translateY(20px)';
+      notificacion.style.transition = 'opacity 0.5s, transform 0.5s';
+      setTimeout(() => {
+        if (document.body.contains(notificacion)) {
+          notificacion.remove();
+        }
+      }, 500);
+    }
+  }, 3000);
+}
+
+// Agregamos la función initSearchListeners que falta
+function initSearchListeners() {
+  const searchInput = document.getElementById('searchInput');
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      if (searchTerm) {
+        filteredCitas = todasLasCitas.filter(cita => {
+          return cita.ID.toString().toLowerCase().includes(searchTerm) || 
+                cita['Nombre Cliente'].toLowerCase().includes(searchTerm);
+        });
+        currentPage = 1; // Reset a página 1 cuando busca
+        renderCitas(filteredCitas, 1);
+        clearSearchBtn.style.display = 'block';
+      } else {
+        filteredCitas = [...todasLasCitas];
+        renderCitas(todasLasCitas, currentPage);
+        clearSearchBtn.style.display = 'none';
+      }
+    });
+  }
+  
+  if (clearSearchBtn) {
+    clearSearchBtn.style.display = 'none';
+    clearSearchBtn.addEventListener('click', function() {
+      searchInput.value = '';
+      filteredCitas = [...todasLasCitas];
+      renderCitas(todasLasCitas, currentPage);
+      this.style.display = 'none';
+    });
+  }
+}
+
+// Inicializar flatpickr para el selector de fecha
+function initDateFilter() {
+  const dateFilterInput = document.getElementById('dateFilter');
+  const dateRangeFilter = document.getElementById('dateRangeFilter');
+  const clearDateBtn = document.getElementById('clearDateBtn');
+  
+  if (dateFilterInput) {
+    // Inicializar flatpickr para selección de fecha específica
+    const datePicker = flatpickr(dateFilterInput, {
+      dateFormat: "Y-m-d",
+      locale: "es",
+      onChange: function(selectedDates, dateStr) {
+        if (dateStr) {
+          clearDateBtn.classList.remove('hidden');
+          dateRangeFilter.value = ''; // Limpiar el otro filtro
+          
+          // Filtrar citas por la fecha seleccionada
+          const fechaSeleccionada = dateStr;
+          filteredCitas = todasLasCitas.filter(cita => {
+            // Comparar solo la parte de fecha (YYYY-MM-DD)
+            const fechaCita = cita.Fecha.split('T')[0];
+            return fechaCita === fechaSeleccionada;
+          });
+          
+          currentPage = 1; // Reset a página 1
+          renderCitas(filteredCitas, 1);
+          
+          // Mostrar resumen de filtro
+          mostrarResumenFiltro(`Citas para ${formatearFecha(fechaSeleccionada)}`);
+        }
+      }
+    });
+    
+    // Botón para limpiar filtro de fecha específica
+    clearDateBtn.addEventListener('click', () => {
+      datePicker.clear();
+      clearDateBtn.classList.add('hidden');
+      filteredCitas = [...todasLasCitas];
+      renderCitas(todasLasCitas, currentPage);
+      ocultarResumenFiltro();
+    });
+  }
+  
+  // Filtro por rango de fechas (hoy, esta semana, este mes)
+  if (dateRangeFilter) {
+    dateRangeFilter.addEventListener('change', () => {
+      const rangoSeleccionado = dateRangeFilter.value;
+      
+      // Limpiar el datepicker si hay un rango seleccionado
+      if (rangoSeleccionado && dateFilterInput) {
+        // FORMA CORRECTA: Acceder a la instancia directamente desde el elemento
+        if (dateFilterInput._flatpickr) {
+          dateFilterInput._flatpickr.clear();
+          clearDateBtn.classList.add('hidden');
+        }
+      }
+      
+      // Filtrar por el rango seleccionado
+      if (rangoSeleccionado) {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        let fechaInicio = new Date(hoy);
+        let fechaFin = new Date(hoy);
+        let mensajeFiltro = "";
+        
+        switch (rangoSeleccionado) {
+          case 'today':
+            mensajeFiltro = "Citas para hoy";
+            break;
+          case 'tomorrow':
+            fechaInicio.setDate(hoy.getDate() + 1);
+            fechaFin.setDate(hoy.getDate() + 1);
+            mensajeFiltro = "Citas para mañana";
+            break;
+          case 'week':
+            // Inicio de semana (lunes)
+            const diaSemana = hoy.getDay(); // 0 = domingo, 1 = lunes, ...
+            const diff = hoy.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+            fechaInicio = new Date(hoy.setDate(diff));
+            fechaInicio.setHours(0, 0, 0, 0);
+            
+            // Fin de semana (domingo)
+            fechaFin = new Date(fechaInicio);
+            fechaFin.setDate(fechaInicio.getDate() + 6);
+            fechaFin.setHours(23, 59, 59, 999);
+            
+            mensajeFiltro = `Citas para esta semana (${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)})`;
+            break;
+          case 'month':
+            // Inicio del mes
+            fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            // Fin del mes
+            fechaFin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            fechaFin.setHours(23, 59, 59, 999);
+            
+            mensajeFiltro = `Citas para ${fechaInicio.toLocaleString('es-ES', { month: 'long' })} ${fechaInicio.getFullYear()}`;
+            break;
+          default:
+            // Todas las citas
+            filteredCitas = [...todasLasCitas];
+            renderCitas(todasLasCitas, 1);
+            ocultarResumenFiltro();
+            return;
+        }
+        
+        // Aplicar filtro
+        filteredCitas = todasLasCitas.filter(cita => {
+          const fechaCita = new Date(cita.Fecha);
+          return fechaCita >= fechaInicio && fechaCita <= fechaFin;
+        });
+        
+        currentPage = 1; // Reset a página 1
+        renderCitas(filteredCitas, 1);
+        
+        // Mostrar resumen del filtro
+        mostrarResumenFiltro(mensajeFiltro);
+      } else {
+        // Sin filtro - mostrar todas
+        filteredCitas = [...todasLasCitas];
+        renderCitas(todasLasCitas, currentPage);
+        ocultarResumenFiltro();
+      }
+    });
+  }
+}
+
+// Formatear fecha para mostrar en mensajes
+function formatearFecha(fecha) {
+  if (typeof fecha === 'string') {
+    fecha = new Date(fecha);
+  }
+  
+  return fecha.toLocaleDateString('es-ES', {
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric'
+  });
+}
+
+// Mostrar resumen de filtro activo
+function mostrarResumenFiltro(mensaje) {
+  // Buscar si ya existe el resumen
+  let resumenEl = document.getElementById('resumenFiltro');
+  
+  // Si no existe, crearlo
+  if (!resumenEl) {
+    resumenEl = document.createElement('div');
+    resumenEl.id = 'resumenFiltro';
+    resumenEl.className = 'col-span-full bg-indigo-50 rounded-lg p-3 flex items-center justify-between mb-2 animate-fadeIn';
+    
+    // Insertar antes del contenedor de citas
+    const container = document.getElementById('citasContainer');
+    container.parentNode.insertBefore(resumenEl, container);
+  }
+  
+  // Actualizar el contenido
+  resumenEl.innerHTML = `
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+      </svg>
+      <span class="font-medium text-indigo-700">${mensaje}</span>
+    </div>
+    <button id="limpiarFiltroBtn" class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center">
+      Limpiar filtro
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  `;
+  
+  // Agregar evento al botón de limpiar
+  document.getElementById('limpiarFiltroBtn').addEventListener('click', () => {
+    // Resetear ambos filtros
+    const datePicker = document.getElementById('dateFilter');
+    if (datePicker && datePicker._flatpickr) {
+      datePicker._flatpickr.clear();
+    }
+    
+    document.getElementById('dateRangeFilter').value = '';
+    document.getElementById('clearDateBtn').classList.add('hidden');
+    
+    // Mostrar todas las citas
+    filteredCitas = [...todasLasCitas];
+    renderCitas(todasLasCitas, 1);
+    
+    // Quitar el resumen
+    ocultarResumenFiltro();
+  });
+}
+
+// Ocultar resumen de filtro
+function ocultarResumenFiltro() {
+  const resumenEl = document.getElementById('resumenFiltro');
+  if (resumenEl) {
+    resumenEl.remove();
+  }
+}
+
+// Al inicio del script (después de definir todasLasCitas)
+let realtimeUpdater; // Referencia global al actualizador
+
+// Modificar el evento DOMContentLoaded para inicializar el filtro de fecha
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar todos los sistemas
+  initNotificationSystem();
+  initSearchListeners();
+  initDateFilter();
+  manejarAccionesCita();
+  mejorarIndicadorCarga(); 
+  
+  // Cargar las citas reales inmediatamente (una sola vez)
+  cargarCitas().then(() => {
+    // Una vez cargadas las citas iniciales, iniciar actualización en tiempo real
+    if (!window.realtimeUpdater) {
+      window.realtimeUpdater = configurarActualizacionRealtime();
+      
+      // Ajustar el intervalo para reducir la frecuencia de actualizaciones
+      window.realtimeUpdater.cambiarIntervalo(180000); // 3 minutos
+    }
+  });
+});
+
+// Actualiza la función renderCitas para agregar un destacado a las citas de hoy
+function renderCitas(citas, page = 1) {
+  const container = document.getElementById('citasContainer');
+  const startIndex = (page - 1) * CARDS_PER_PAGE;
+  const endIndex = startIndex + CARDS_PER_PAGE;
+  let citasToShow = citas.slice(startIndex, endIndex);
+  
+  // Limpiar el contenedor
+  container.innerHTML = '';
+  
+  // Si no hay citas para mostrar
+  if (citasToShow.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full p-8 text-center">
+        <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4">
+          <p class="text-indigo-700">No hay citas para mostrar</p>
+          <p class="text-sm text-indigo-500 mt-2">No se encontraron citas con los criterios actuales</p>
+        </div>
+      </div>
+    `;
+    // Ocultar paginación si no hay resultados
+    document.getElementById('paginationContainer').innerHTML = '';
+    return;
+  }
+  
+  // Fecha actual para comparación
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const fechaHoyStr = hoy.toISOString().split('T')[0];
+  
+  // Ordenar citas: primero por fecha (más cercana primero)
+  citasToShow.sort((a, b) => {
+    const fechaA = new Date(a.Fecha);
+    const fechaB = new Date(b.Fecha);
+    return fechaA - fechaB;
+  });
+  
+  // Renderizar las citas de la página currentPage
+  citasToShow.forEach(cita => {
+    // Formatear fecha
+    const fecha = new Date(cita.Fecha);
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).replace(/\//g, '-');
+    
+    // Verificar si es hoy
+    const esHoy = cita.Fecha.split('T')[0] === fechaHoyStr;
+    
+    const estadoColor = cita.Estado === 'Completada' ? 'bg-green-100 text-green-700'
+      : cita.Estado === 'Cancelada' ? 'bg-red-100 text-red-700'
+      : cita.Estado === 'Activo' ? 'bg-blue-100 text-blue-700'
+      : 'bg-yellow-100 text-yellow-700';
+    
+    // Añadir clase especial si es hoy
+    const cardClass = esHoy ? 
+      'border-l-4 border-indigo-500 ring-2 ring-indigo-100' : 
+      'border-l-4 border-indigo-400';
+    
+    // Modificar la parte de renderCitas donde se crean los botones
+    // Reemplazar la sección de botones en renderCitas con esto:
+
+    container.innerHTML += `
+      <div id="cita-card-${cita.ID}" class="rounded-xl shadow-lg p-5 bg-white flex flex-col gap-2 ${cardClass} relative animate-fadeIn">
+        ${esHoy ? '<div class="absolute -top-2 -right-2 bg-indigo-500 text-white text-xs px-2 py-1 rounded-full">HOY</div>' : ''}
+        
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-indigo-700 text-lg info-highlight">${cita['Nombre Cliente']}</span>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold ${estadoColor}">${cita.Estado}</span>
+        </div>
+        
+        <div class="flex flex-col flex-1">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="text-sm text-gray-500">
+              <span class="font-medium text-gray-700">ID:</span> ${cita.ID}
+            </div>
+            <div class="text-sm text-gray-500 text-right">
+              <span class="font-medium text-gray-700">Fecha:</span> ${fechaFormateada}
+            </div>
+          </div>
+          
+          <div class="mt-2">
+            <span class="block text-sm text-gray-500">
+              <span class="font-medium text-gray-700">Observaciones:</span> ${cita.Observaciones || 'Ninguna'}
+            </span>
+          </div>
+        </div>
+        
+        <div class="flex gap-2 mt-4">
+          <button class="action-btn confirmar-btn flex-1 px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 transition-all ${cita.Estado !== 'Activo' && cita.Estado !== 'Pendiente' ? 'opacity-50 cursor-not-allowed' : ''}" 
+            ${cita.Estado !== 'Activo' && cita.Estado !== 'Pendiente' ? 'disabled' : ''}>
+            <span class="text-sm">✔️</span> Confirmar
+          </button>
+          <button class="action-btn cancelar-btn flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition-all ${cita.Estado !== 'Activo' && cita.Estado !== 'Pendiente' ? 'opacity-50 cursor-not-allowed' : ''}"
+            ${cita.Estado !== 'Activo' && cita.Estado !== 'Pendiente' ? 'disabled' : ''}>
+            <span class="text-sm">❌</span> Cancelar
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  
+  // Renderizar la paginación
+  renderPagination(citas);
+}
+
+// Reemplaza la función configurarActualizacionRealtime con esta versión mejorada
+function configurarActualizacionRealtime() {
+  let intentos = 0;
+  const MAX_INTENTOS = 5;
+  const INTERVALO_BASE = 120000; // Aumentado a 2 minutos (120000 ms)
+  let intervalo = null;
+  let ultimaActualizacion = Date.now();
+  let ultimoDatoHash = null; // Para verificar si realmente hay cambios
+
+  // Función para obtener un hash simple de los datos
+  function obtenerHashDatos(datos) {
+    // Simplificación: usar longitud y algunos elementos representativos
+    try {
+      return JSON.stringify(datos.slice(0, 3).map(c => c.ID + c.Estado)).length + '-' + datos.length;
+    } catch (e) {
+      return Date.now(); // Fallback
+    }
+  }
+
+  // Función para cargar datos con gestión de errores y reintentos exponenciales
+  async function actualizarDatos(forzar = false) {
+    // No actualizar si pasó poco tiempo desde la última actualización (excepto si es forzado)
+    const ahora = Date.now();
+    if (!forzar && ahora - ultimaActualizacion < 180000) { // Aumentar de 120000 a 180000 (3 minutos)
+      return false;
+    }
+
+    // Cambiar la indicación visual solo si es forzado o pasó suficiente tiempo
+    const mostrarIndicadorCarga = forzar || ahora - ultimaActualizacion > INTERVALO_BASE;
+    const indicador = document.getElementById('realtimeIndicator');
+    
+    if (mostrarIndicadorCarga && indicador) {
+      // Cambiar indicación visual sutilmente
+      const punto = indicador.querySelector('span.rounded-full');
+      if (punto) punto.classList.add('animate-pulse');
+      
+      // Texto de indicador más discreto
+      const textoIndicador = indicador.querySelector('span:not(.rounded-full)');
+      if (textoIndicador) textoIndicador.textContent = 'Actualizando...';
+    }
+
+    try {
+      // Intentar cargar los datos con un timeout de 15 segundos
+      const controlador = new AbortController();
+      const timeoutId = setTimeout(() => controlador.abort(), 15000);
+      
+      const nuevasCitas = await fetch('https://script.google.com/macros/s/AKfycbw1-cfR6G6yWq9WD3I78L8-qt_Rj7UnPGxBeMoBBlsEg6AzG456EMd2U1yH3k3uO1if/exec', {
+        signal: controlador.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!nuevasCitas.ok) {
+        throw new Error(`Error de red: ${nuevasCitas.status}`);
+      }
+      
+      const citasActualizadas = await nuevasCitas.json();
+      
+      // Verificar si hay datos válidos
+      if (!Array.isArray(citasActualizadas)) {
+        throw new Error('Formato de datos inválido');
+      }
+      
+      // Filtrar solo citas activas y pendientes
+      const citasFiltradas = citasActualizadas.filter(cita => 
+        cita.Estado === 'Activo' || cita.Estado === 'Pendiente'
+      );
+      
+      // Verificar si realmente hay cambios
+      const nuevoHash = obtenerHashDatos(citasFiltradas);
+      const hayNuevosDatos = ultimoDatoHash !== nuevoHash;
+      ultimoDatoHash = nuevoHash;
+      
+      // Restaurar valores por defecto al tener éxito
+      intentos = 0;
+      ultimaActualizacion = ahora;
+      
+      // Detener animación de carga y mostrar estado "conectado"
+      if (indicador) {
+        setTimeout(() => {
+          const punto = indicador.querySelector('span.rounded-full');
+          if (punto) punto.classList.remove('animate-pulse');
+          
+          const textoIndicador = indicador.querySelector('span:not(.rounded-full)');
+          if (textoIndicador) textoIndicador.textContent = 'Tiempo real';
+          
+          // Mostrar un pequeño flash verde solo si hubo cambios reales
+          if (hayNuevosDatos) {
+            indicador.classList.add('bg-green-100');
+            setTimeout(() => indicador.classList.remove('bg-green-100'), 500);
+          }
+        }, 600);
+      }
+      
+      // Solo actualizar los datos globales si realmente hay cambios
+      if (hayNuevosDatos) {
+        const citasAnteriores = [...todasLasCitas];
+        todasLasCitas = citasFiltradas;
+        
+        // Comparar y detectar cambios para notificaciones
+        detectarCambios(citasAnteriores, citasFiltradas);
+        
+        // Si estamos mostrando todas las citas (sin filtro), actualizar la vista
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput || !searchInput.value.trim()) {
+          renderCitas(todasLasCitas, currentPage);
+        }
+        
+        // Si hubo cambios, mostrar un indicador temporal muy sutil
+        const contenedor = document.getElementById('citasContainer');
+        if (contenedor) {
+          contenedor.classList.add('updated-content');
+          setTimeout(() => contenedor.classList.remove('updated-content'), 1000);
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error al actualizar datos en tiempo real:', error);
+      
+      // Incrementar contador de intentos
+      intentos++;
+      
+      // Cambiar el indicador a estado de error solo si era visible
+      if (mostrarIndicadorCarga) {
+        const indicador = document.getElementById('realtimeIndicator');
+        if (indicador) {
+          indicador.classList.remove('bg-green-50', 'text-green-700', 'border-green-200');
+          indicador.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
+          
+          const textoIndicador = indicador.querySelector('span:not(.rounded-full)');
+          if (textoIndicador) textoIndicador.textContent = 'Reconectando...';
+        }
+      }
+      
+      // Calcular tiempo de espera con retroceso exponencial
+      const tiempoEspera = Math.min(INTERVALO_BASE * Math.pow(1.5, intentos - 1), 300000); // Máximo 5 minutos
+      
+      console.log(`Reintento ${intentos}/${MAX_INTENTOS} en ${tiempoEspera/1000} segundos`);
+      
+      // Si excedimos los intentos máximos, mostrar mensaje de error persistente
+      if (intentos >= MAX_INTENTOS) {
+        mostrarNotificacion('No se pudo conectar al servidor. Por favor, recargue la página.', 'error');
+        
+        if (indicador) {
+          const textoIndicador = indicador.querySelector('span:not(.rounded-full)');
+          if (textoIndicador) textoIndicador.textContent = 'Desconectado';
+        }
+        
+        // Detener los reintentos automáticos
+        clearInterval(intervalo);
+        return false;
+      }
+      
+      return false;
+    }
+  }
+  
+  // Iniciar la actualización inmediatamente, pero sin mostrar indicadores
+  actualizarDatos(false);
+  
+  // Configurar intervalo para actualizaciones periódicas
+  intervalo = setInterval(() => actualizarDatos(false), INTERVALO_BASE);
+  
+  // Devolver un objeto con métodos para controlar el actualizador
+  return {
+    detener: () => {
+      clearInterval(intervalo);
+    },
+    forzarActualizacion: () => {
+      actualizarDatos(true);
+    },
+    cambiarIntervalo: (nuevoIntervalo) => {
+      clearInterval(intervalo);
+      intervalo = setInterval(() => actualizarDatos(false), nuevoIntervalo);
+    }
+  };
+}
+
+// Función para detectar cambios entre actualizaciones y mostrar notificaciones
+function detectarCambios(citasAnteriores, citasNuevas) {
+  // Mapear las citas por ID para facilitar la comparación
+  const mapaAnterior = new Map(citasAnteriores.map(cita => [cita.ID, cita]));
+  
+  // Buscar citas nuevas o modificadas
+  citasNuevas.forEach(citaNueva => {
+    const citaAnterior = mapaAnterior.get(citaNueva.ID);
+    
+    // Si no existía antes, es una cita nueva
+    if (!citaAnterior) {
+      crearNotificacion({
+        tipo: 'nueva',
+        titulo: 'Nueva cita registrada',
+        mensaje: `Cliente: ${citaNueva['Nombre Cliente']}`,
+        fecha: new Date(),
+        id: citaNueva.ID
+      });
+      return;
+    }
+    
+    // Si cambió el estado, notificar
+    if (citaAnterior.Estado !== citaNueva.Estado) {
+      crearNotificacion({
+        tipo: 'cambio',
+        titulo: `Cita ${citaNueva.ID} cambió de estado`,
+        mensaje: `${citaAnterior.Estado} → ${citaNueva.Estado}`,
+        fecha: new Date(),
+        id: citaNueva.ID
+      });
+    }
+  });
+  
+  // Buscar citas eliminadas o canceladas
+  citasAnteriores.forEach(citaAnterior => {
+    const existe = citasNuevas.some(cita => cita.ID === citaAnterior.ID);
+    if (!existe) {
+      crearNotificacion({
+        tipo: 'eliminada',
+        titulo: 'Cita eliminada o cancelada',
+        mensaje: `ID: ${citaAnterior.ID} - ${citaAnterior['Nombre Cliente']}`,
+        fecha: new Date(),
+        id: citaAnterior.ID
+      });
+    }
+  });
+}
+
+// Función para crear notificaciones en el sistema
+function crearNotificacion(datos) {
+  // Verificar que el sistema de notificaciones esté inicializado
+  if (!window.notificacionesSystem) {
+    initNotificationSystem();
+  }
+  
+  // Agregar la notificación
+  window.notificacionesSystem.agregarNotificacion(datos);
+  
+  // Animar la campanita
+  const bell = document.getElementById('notificationBell');
+  if (bell) {
+    bell.classList.add('bell-animation');
+    setTimeout(() => bell.classList.remove('bell-animation'), 1000);
+  }
+  
+  // Mostrar contador
+  const count = document.getElementById('notificationCount');
+  if (count) {
+    count.textContent = parseInt(count.textContent || 0) + 1;
+    count.classList.remove('hidden');
+  }
+}
+
+// Inicializar el sistema de notificaciones
+function initNotificationSystem() {
+  // Si ya existe, no volver a inicializar
+  if (window.notificacionesSystem) return;
+  
+  // Crear el sistema de notificaciones
+  window.notificacionesSystem = {
+    notificaciones: [],
+    
+    agregarNotificacion: function(datos) {
+      // Agregar timestamp si no tiene
+      if (!datos.fecha) datos.fecha = new Date();
+      
+      // Agregar al inicio del array para que las más nuevas aparezcan primero
+      this.notificaciones.unshift(datos);
+      
+      // Limitar a 50 notificaciones como máximo
+      if (this.notificaciones.length > 50) {
+        this.notificaciones.pop();
+      }
+      
+      // Actualizar la interfaz si el panel está abierto
+      if (!document.getElementById('notificationsPanel').classList.contains('hidden')) {
+        this.renderizarNotificaciones();
+      }
+    },
+    
+    limpiarNotificaciones: function() {
+      this.notificaciones = [];
+      this.renderizarNotificaciones();
+      
+      // Ocultar contador
+      const count = document.getElementById('notificationCount');
+      if (count) {
+        count.textContent = '0';
+        count.classList.add('hidden');
+      }
+    },
+    
+    renderizarNotificaciones: function() {
+      const container = document.getElementById('notificationsContainer');
+      if (!container) return;
+      
+      if (this.notificaciones.length === 0) {
+        container.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No hay notificaciones nuevas</div>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      this.notificaciones.forEach((notif, index) => {
+        const tiempo = this.formatearTiempo(notif.fecha);
+        const tipoIcon = this.obtenerIconoTipo(notif.tipo);
+        const tipoClase = this.obtenerClaseTipo(notif.tipo);
+        
+        container.innerHTML += `
+          <div class="notification-item hover:bg-gray-50 ${index === 0 ? 'animate-fadeIn' : ''}">
+            <div class="flex items-start">
+              <div class="flex-shrink-0 ${tipoClase} p-2 rounded-full mr-3">
+                ${tipoIcon}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">${notif.titulo}</p>
+                <p class="text-sm text-gray-500">${notif.mensaje}</p>
+              </div>
+              <div class="text-xs text-gray-400">${tiempo}</div>
+            </div>
+          </div>
+        `;
+      });
+    },
+    
+    formatearTiempo: function(fecha) {
+      const ahora = new Date();
+      const diff = Math.floor((ahora - new Date(fecha)) / 1000);
+      
+      if (diff < 60) return 'Ahora';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+      return `${Math.floor(diff / 86400)}d`;
+    },
+    
+    obtenerIconoTipo: function(tipo) {
+      switch(tipo) {
+        case 'nueva':
+          return '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+        case 'cambio':
+          return '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>';
+        case 'eliminada':
+          return '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>';
+        default:
+          return '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+      }
+    },
+    
+    obtenerClaseTipo: function(tipo) {
+      switch(tipo) {
+        case 'nueva': return 'bg-green-100 text-green-600';
+        case 'cambio': return 'bg-blue-100 text-blue-600';
+        case 'eliminada': return 'bg-red-100 text-red-600';
+        default: return 'bg-gray-100 text-gray-600';
+      }
+    }
+  };
+  
+  // Configurar el manejo de eventos para el panel de notificaciones
+  const bell = document.getElementById('notificationBell');
+  const panel = document.getElementById('notificationsPanel');
+  
+  if (bell && panel) {
+    bell.addEventListener('click', () => {
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        window.notificacionesSystem.renderizarNotificaciones();
+      } else {
+        panel.classList.add('hidden');
+      }
+    });
+    
+    // Cerrar al hacer click fuera
+    document.addEventListener('click', (e) => {
+      if (!panel.contains(e.target) && !bell.contains(e.target) && !panel.classList.contains('hidden')) {
+        panel.classList.add('hidden');
+      }
+    });
+    
+    // Configurar botón de limpiar
+    document.getElementById('clearAllNotifications')?.addEventListener('click', () => {
+      window.notificacionesSystem.limpiarNotificaciones();
+    });
+  }
+}
+
+// Renderizar la paginación
+function renderPagination(citas) {
+  const totalPaginas = Math.ceil(citas.length / CARDS_PER_PAGE);
+  const container = document.getElementById('paginationContainer');
+  
+  if (!container || totalPaginas <= 1) {
+    if (container) container.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  
+  // Botón anterior
+  html += `
+    <button class="pagination-btn ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-50'} 
+      px-3 py-1 rounded-md flex items-center gap-1 text-indigo-700"
+      ${currentPage === 1 ? 'disabled' : ''} 
+      data-page="${currentPage - 1}">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Anterior
+    </button>
+  `;
+  
+  // Páginas
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPaginas, startPage + maxVisiblePages - 1);
+  
+  // Ajustar startPage si estamos cerca del final
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+  
+  // Primera página (si no es visible)
+  if (startPage > 1) {
+    html += `
+      <button class="pagination-btn px-3 py-1 rounded-md hover:bg-indigo-50 text-indigo-700" 
+        data-page="1">1</button>
+    `;
+    
+    if (startPage > 2) {
+      html += `<span class="px-1 text-gray-500">...</span>`;
+    }
+  }
+  
+  // Páginas visibles
+  for (let i = startPage; i <= endPage; i++) {
+    html += `
+      <button class="pagination-btn px-3 py-1 rounded-md 
+        ${currentPage === i ? 'bg-indigo-600 text-white' : 'hover:bg-indigo-50 text-indigo-700'}" 
+        data-page="${i}">${i}</button>
+    `;
+  }
+  
+  // Última página (si no es visible)
+  if (endPage < totalPaginas) {
+    if (endPage < totalPaginas - 1) {
+      html += `<span class="px-1 text-gray-500">...</span>`;
+    }
+    
+    html += `
+      <button class="pagination-btn px-3 py-1 rounded-md hover:bg-indigo-50 text-indigo-700" 
+        data-page="${totalPaginas}">${totalPaginas}</button>
+    `;
+  }
+  
+  // Botón siguiente
+  html += `
+    <button class="pagination-btn ${currentPage === totalPaginas ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-50'} 
+      px-3 py-1 rounded-md flex items-center gap-1 text-indigo-700"
+      ${currentPage === totalPaginas ? 'disabled' : ''} 
+      data-page="${currentPage + 1}">
+      Siguiente
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+  `;
+  
+  container.innerHTML = html;
+  
+  // Agregar eventos a los botones
+  document.querySelectorAll('.pagination-btn').forEach(btn => {
+    if (!btn.disabled) {
+      btn.addEventListener('click', () => {
+        const page = parseInt(btn.dataset.page);
+        currentPage = page;
+        renderCitas(citas, page);
+        
+        // Guardar la página actual en localStorage
+        localStorage.setItem('paginaCitas', page);
+        
+        // Scroll al inicio de las citas
+        document.getElementById('citasContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  });
+}
+
+// Agregar esta función para manejar las acciones de confirmar/cancelar citas
+function manejarAccionesCita() {
+  // Delegar eventos a los botones dentro de las tarjetas de citas
+  document.getElementById('citasContainer').addEventListener('click', async (e) => {
+    // Identificar qué botón se presionó usando clases en lugar de :contains
+    const target = e.target.closest('button');
+    if (!target) return; // No es un botón
+    
+    // Verificar si es un botón de acción (confirmar o cancelar)
+    const isConfirmarBtn = target.classList.contains('confirmar-btn');
+    const isCancelarBtn = target.classList.contains('cancelar-btn');
+    
+    if (!isConfirmarBtn && !isCancelarBtn) return; // No es un botón de acción
+    
+    // Obtener el ID de la cita desde el ID de la tarjeta
+    const citaCard = target.closest('[id^="cita-card-"]');
+    if (!citaCard) return;
+    
+    const citaId = citaCard.id.replace('cita-card-', '');
+    
+    // Determinar la acción a realizar
+    let accion = '';
+    if (isConfirmarBtn) {
+      accion = 'Completada';
+    } else if (isCancelarBtn) {
+      accion = 'Cancelada';
+    }
+    
+    if (!accion) return;
+    
+    // Mostrar modal de confirmación
+    const confirmar = await mostrarModalConfirmacion(accion, citaId);
+    if (!confirmar) return;
+    
+    // Mostrar indicador de carga en el botón
+    const boton = target;
+    const textoOriginal = boton.innerHTML;
+    boton.disabled = true;
+    boton.innerHTML = `
+      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Procesando...
+    `;
+    
+    // Desactivar ambos botones mientras se procesa
+    citaCard.querySelectorAll('button').forEach(btn => {
+      btn.disabled = true;
+    });
+    
+    try {
+      // Llamar a la API para cambiar el estado
+      const params = new URLSearchParams();
+      params.append('ID', citaId);
+      params.append('accion', 'cambiarEstado');
+      params.append('nuevoEstado', accion);
+      
+      const response = await fetch('https://script.google.com/macros/s/AKfycby5-jfc73OonembL8qG51vRv0c0niWNTi_bHFjwFP7n6MVJnBuysSb_nAgJKs89sFsn/exec', {
+        method: 'POST',
+        body: params
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error en la respuesta: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.result === 'success' || result.result === 'estado actualizado') {
+        // Mostrar notificación de éxito
+        mostrarNotificacion(`Cita ${citaId} ${accion === 'Completada' ? 'confirmada' : 'cancelada'} exitosamente`);
+        
+        // Actualizar la UI sin recargar la página
+        // 1. Actualizar el estado en el array local
+        const citaIndex = todasLasCitas.findIndex(c => c.ID === citaId);
+        if (citaIndex !== -1) {
+          todasLasCitas[citaIndex].Estado = accion;
+          
+          // 2. Si estamos en filtro, actualizar también allí
+          const filtroIndex = filteredCitas.findIndex(c => c.ID === citaId);
+          if (filtroIndex !== -1) {
+            filteredCitas[filtroIndex].Estado = accion;
+          }
+          
+          // 3. Volver a renderizar la página actual
+          renderCitas(filteredCitas.length > 0 ? filteredCitas : todasLasCitas, currentPage);
+        } else {
+          // Si por alguna razón no se encuentra la cita, forzar una recarga de datos
+          setTimeout(() => {
+            const updater = configurarActualizacionRealtime();
+            updater.forzarActualizacion();
+          }, 1000);
+        }
+      } else {
+        throw new Error('No se pudo actualizar el estado de la cita');
+      }
+    } catch (error) {
+      console.error('Error al cambiar estado de cita:', error);
+      mostrarNotificacion(`Error: No se pudo ${accion === 'Completada' ? 'confirmar' : 'cancelar'} la cita`, 'error');
+      
+      // Restaurar botón
+      boton.innerHTML = textoOriginal;
+      
+      // Reactivar botones
+      citaCard.querySelectorAll('button').forEach(btn => {
+        btn.disabled = false;
+      });
+    }
+  });
+}
+
+// Función para mostrar modal de confirmación
+function mostrarModalConfirmacion(accion, citaId) {
+  return new Promise((resolve) => {
+    // Crear modal de confirmación
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn';
+    modal.id = 'modalConfirmacion';
+    
+    const contenido = document.createElement('div');
+    contenido.className = 'bg-white rounded-lg p-6 max-w-md mx-auto shadow-xl transform transition-all animate-bounceIn';
+    
+    const titulo = accion === 'Completada' ? 'Confirmar cita' : 'Cancelar cita';
+    const mensaje = accion === 'Completada' 
+      ? `¿Está seguro que desea marcar la cita #${citaId} como completada?` 
+      : `¿Está seguro que desea cancelar la cita #${citaId}?`;
+    const colorBoton = accion === 'Completada' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
+    
+    contenido.innerHTML = `
+      <div class="flex items-center mb-4">
+        <div class="mr-4 bg-${accion === 'Completada' ? 'green' : 'red'}-100 rounded-full p-2">
+          <svg class="w-6 h-6 text-${accion === 'Completada' ? 'green' : 'red'}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${accion === 'Completada' 
+              ? 'M5 13l4 4L19 7' 
+              : 'M6 18L18 6M6 6l12 12'}"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">${titulo}</h3>
+      </div>
+      <p class="text-gray-500 mb-5">${mensaje}</p>
+      <div class="flex justify-end gap-3">
+        <button id="cancelarAccion" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">
+          Volver
+        </button>
+        <button id="confirmarAccion" class="px-4 py-2 ${colorBoton} text-white rounded transition-colors">
+          ${accion === 'Completada' ? 'Confirmar' : 'Cancelar cita'}
+        </button>
+      </div>
+    `;
+    
+    modal.appendChild(contenido);
+    document.body.appendChild(modal);
+    
+    // Agregar eventos
+    document.getElementById('confirmarAccion').addEventListener('click', () => {
+      modal.remove();
+      resolve(true);
+    });
+    
+    document.getElementById('cancelarAccion').addEventListener('click', () => {
+      modal.remove();
+
+      resolve(false);
+    });
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', function cerrarConEsc(e) {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', cerrarConEsc);
+        resolve(false);
+      }
+    });
+  });
+}
+
+// Mejora el indicador de carga para que sea menos intrusivo
+function mejorarIndicadorCarga() {
+  const indicador = document.getElementById('realtimeIndicator');
+  if (indicador) {
+    // Hacer que sea más sutil
+    indicador.classList.add('opacity-70', 'hover:opacity-100', 'transition-opacity', 'cursor-help');
+    
+    // Reemplazar el elemento span con una versión más discreta
+    const textoIndicador = indicador.querySelector('span:not(.rounded-full)');
+    if (textoIndicador) {
+      textoIndicador.classList.add('text-xs');
+    }
+    
+    // Hacer que el punto sea más pequeño y sin animación constante
+    const punto = indicador.querySelector('span.rounded-full');
+    if (punto) {
+      punto.classList.remove('animate-pulse');
+      punto.classList.add('w-1.5', 'h-1.5');
+    }
+    
+    // Agregar evento para actualización manual
+    indicador.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.realtimeUpdater && window.realtimeUpdater.forzarActualizacion) {
+        window.realtimeUpdater.forzarActualizacion();
+        mostrarNotificacion('Actualizando datos...', 'info');
+      }
+    });
+    
+    // Actualizar tooltip con información útil
+    setInterval(() => {
+      const ultimaAct = localStorage.getItem('ultimaActualizacion');
+      const texto = ultimaAct ? 
+        `Última actualización: ${new Date(parseInt(ultimaAct)).toLocaleTimeString()}` :
+        'Actualización automática cada 3 minutos';
+      indicador.setAttribute('title', texto);
+    }, 30000);
+  }
+}
+
+
+// Función auxiliar para obtener la instancia de flatpickr
+function getFlatpickrInstance(element) {
+  if (typeof element === 'string') {
+    element = document.getElementById(element);
+  }
+  return element && element._flatpickr ? element._flatpickr : null;
+}
+
+// Pequeña extensión para hacer que el método "contains" funcione en los elementos
+if (!Element.prototype.matches) {
+  Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+}
+
+if (!Element.prototype.closest) {
+  Element.prototype.closest = function(s) {
+    var el = this;
+    do {
+      if (el.matches(s)) return el;
+      el = el.parentElement || el.parentNode;
+    } while (el !== null && el.nodeType === 1);
+    return null;
+  };
+}
+
+// Agregar método contains a los selectores
+Element.prototype.containsText = function(text) {
+  return this.textContent.includes(text);
+};
+
+// Extender querySelector para buscar elementos que contienen cierto texto
+document.querySelectorAll = (function(original) {
+  return function(selector) {
+    if (selector.includes(':contains(')) {
+      // Extraer el texto buscado
+      const match = selector.match(/:contains\("(.+?)"\)/);
+      if (match) {
+        const searchText = match[1];
+        const baseSelector = selector.replace(/:contains\("(.+?)"\)/, '');
+        
+        // Obtener todos los elementos del selector base
+        const elements = original.call(this, baseSelector);
+        
+        // Filtrar solo los que contienen el texto
+        return Array.from(elements).filter(el => el.textContent.includes(searchText));
+      }
+    }
+    return original.call(this, selector);
+  };
+})(document.querySelectorAll);
+  </script>
+</body>
+</html>
