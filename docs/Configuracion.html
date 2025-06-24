@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuración | Centro Óptico González</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <style>
+  /* Estilos para modo oscuro */
+  body.dark-theme {
+    background: linear-gradient(to bottom right, #1a1a2e, #16213e, #1a1a2e);
+    color: #e6e6e6;
+  }
+
+  body.dark-theme .bg-white,
+  body.dark-theme .bg-white\/90,
+  body.dark-theme .bg-white\/80 {
+    background-color: rgba(26, 26, 46, 0.9);
+    color: #e6e6e6;
+  }
+
+  body.dark-theme .bg-indigo-50 {
+    background-color: rgba(30, 41, 59, 0.7);
+  }
+
+  body.dark-theme input,
+  body.dark-theme select,
+  body.dark-theme textarea {
+    background-color: rgba(30, 41, 59, 0.9);
+    color: #e6e6e6;
+    border-color: #4b5563;
+  }
+
+  body.dark-theme .text-gray-700,
+  body.dark-theme .text-gray-900,
+  body.dark-theme .text-indigo-800 {
+    color: #e6e6e6;
+  }
+
+  /* Animación para notificaciones */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  /* Transición para notificaciones */
+  .fixed.bottom-4.right-4 {
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  /* Añadir estos estilos a tu sección CSS existente */
+.user-info {
+  transition: all 0.3s ease;
+}
+
+#logoutBtn svg {
+  transition: transform 0.2s ease;
+}
+
+#logoutBtn:hover svg {
+  transform: translateX(2px);
+}
+
+#sidebar, #sidebarToggle {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#sidebar.hidden, #sidebarToggle.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Añadir al estilo existente */
+body.login-active {
+  background: linear-gradient(135deg, #EEF2FF, #C7D2FE, #E0E7FF);
+}
+
+/* Estilo mejorado para el panel de login */
+#loginPanel {
+  opacity: 0;
+  animation: fadeInPanel 0.5s ease-out forwards;
+}
+
+@keyframes fadeInPanel {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mejora visual para inputs en modo login */
+.login-active input:focus {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+/* Estilos específicos para la pantalla de login */
+footer.login-footer {
+  display: none;
+}
+
+body.login-active footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+body.login-active footer p {
+  margin: 0;
+  padding: 10px;
+  font-size: 14px;
+  text-align: center;
+  color: #333;
+}
+
+/* Agrega estos estilos a tu sección CSS */
+@media (max-width: 640px) {
+  /* Hacer pestañas más compactas en móvil */
+  .config-tab {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  /* Mejorar desplazamiento de pestañas en móvil */
+  div.flex.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding-bottom: 0.25rem;
+  }
+  
+  /* Optimizar tablas para móvil */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* Ajustar grid de servicios */
+  .service-item {
+    flex-direction: column;
+  }
+  
+  .service-item > div:first-child {
+    margin-bottom: 0.5rem;
+  }
+
+  
+  /* Ajustar los espacios en formularios */
+  .space-y-6 {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+  }
+  
+  /* Hacer que los botones de acción ocupen todo el ancho en móviles */
+  .flex.justify-end button,
+  .flex.justify-end .flex-wrap {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  /* Mejorar la visualización de las tablas en móvil */
+  th, td {
+    white-space: normal;
+    padding: 0.5rem 0.75rem;
+  }
+}
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen">
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <!-- Sidebar para escritorio -->
+    <aside id="sidebar"
+      class="bg-gradient-to-b from-[#4fd3e6] to-[#22325a] text-white w-64 flex-shrink-0 flex-col shadow-lg sticky top-0 h-screen z-30 transition-transform duration-300 hidden md:flex">
+      <div class="p-6 flex flex-col items-center">
+        <div class="bg-white rounded-full p-0 mb-4 shadow-lg w-28 h-28 flex items-center justify-center border-4 border-indigo-200">
+          <img src="redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-24 w-24 object-cover rounded-full">
+        </div>
+        <h2 class="text-3xl font-extrabold mb-8 tracking-wide text-center" style="color:#22325a;">
+          Centro Óptico González
+        </h2>
+        <nav class="space-y-2 w-full">
+          <a href="Index.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">📊</span> <span>Dashboard</span>
+          </a>
+          <a href="Citas.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">📅</span> <span>Citas</span>
+          </a>
+          <a href="CarteraDeClientes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">👤</span> <span>Clientes</span>
+          </a>
+          <a href="Reportes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">📈</span> <span>Reportes</span>
+          </a>
+          <a href="Configuracion.html" class="flex items-center gap-3 py-2 px-4 rounded-lg bg-indigo-800 hover:bg-indigo-600 transition font-semibold shadow hover:scale-105">
+            <span class="text-xl">⚙️</span> <span>Configuración</span>
+          </a>
+        </nav>
+      </div>
+      <div class="mt-auto p-4 text-xs text-indigo-200 text-center">
+        &copy; 2025 Centro Óptico González
+      </div>
+    </aside>
+    
+    <!-- Sidebar móvil (oculto en escritorio) -->
+    <div id="sidebarMobileBackdrop" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden"></div>
+    <aside id="sidebarMobile"
+      class="fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-indigo-900 to-indigo-700 text-white shadow-lg z-50 transform -translate-x-full transition-transform duration-300 flex flex-col md:hidden overflow-auto">
+      <div class="p-6 flex flex-col items-center">
+        <button id="closeSidebarMobile" class="absolute top-4 right-4 text-white text-2xl focus:outline-none">&times;</button>
+        <div class="bg-white rounded-full p-0 mb-4 shadow-lg w-28 h-28 flex items-center justify-center border-4 border-indigo-200">
+          <img src="redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-24 w-24 object-cover rounded-full">
+        </div>
+        <h2 class="text-2xl font-bold mb-8 tracking-wide text-center">Centro Óptico González</h2>
+        <nav class="space-y-2 w-full">
+          <a href="Index.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">📊</span> <span>Dashboard</span>
+          </a>
+          <a href="Citas.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">📅</span> <span>Citas</span>
+          </a>
+          <a href="CarteraDeClientes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">👤</span> <span>Clientes</span>
+          </a>
+          <a href="Reportes.html" class="flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-semibold hover:scale-105">
+            <span class="text-xl">📈</span> <span>Reportes</span>
+          </a>
+          <a href="Configuracion.html" class="flex items-center gap-3 py-2 px-4 rounded-lg bg-indigo-800 hover:bg-indigo-600 transition font-semibold shadow hover:scale-105">
+            <span class="text-xl">⚙️</span> <span>Configuración</span>
+          </a>
+        </nav>
+      </div>
+      <div class="mt-auto p-4 text-xs text-indigo-200 text-center">
+        &copy; 2025 Centro Óptico González
+      </div>
+    </aside>
+    
+    <!-- Botón toggle para móviles -->
+    <div class="md:hidden fixed top-4 left-4 z-50">
+      <button id="sidebarToggle" class="bg-indigo-800 text-white p-2 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-white transition-opacity duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="flex-1 flex flex-col">
+      <header class="bg-white/80 shadow p-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center sticky top-0 z-10 backdrop-blur">
+  <div class="flex items-center w-full justify-between">
+    <h1 class="text-2xl font-bold text-indigo-800 tracking-wide text-center">Configuración</h1>
+    <!-- El botón de logout se añadirá aquí dinámicamente por JS -->
+  </div>
+</header>
+
+<main class="flex-1 p-6">
+        <!-- Panel de login (visible solo si no hay sesión) -->
+        <div id="loginPanel" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[100] transition-all duration-300">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 transform transition-all">
+    <h2 class="text-2xl font-bold text-center text-indigo-800 mb-6">Iniciar sesión</h2>
+    <form id="loginForm" class="space-y-6">
+      <div>
+        <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+        <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+      </div>
+      <div>
+        <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+        <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+      </div>
+      <div id="loginError" class="text-red-500 text-sm hidden"></div>
+      <div>
+        <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-400 text-white py-2 px-4 rounded-md hover:from-indigo-700 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+          Iniciar sesión
+        </button>
+      </div>
+      <div class="text-center">
+        <a href="#" id="resetPasswordLink" class="text-sm text-indigo-600 hover:text-indigo-800">¿Olvidaste tu contraseña?</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+        <!-- Contenido principal de configuración -->
+        <div id="configContent">
+          <!-- Pestañas de configuración -->
+          <div class="bg-white/90 rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex overflow-x-auto space-x-4 border-b border-gray-200 mb-6 pb-2 scrollbar-hidden">
+              <button class="config-tab px-4 py-2 text-indigo-800 font-semibold border-b-2 border-indigo-500 whitespace-nowrap" data-tab="general">Información Óptica</button>
+              <button class="config-tab px-4 py-2 text-gray-500 hover:text-indigo-600 whitespace-nowrap" data-tab="usuarios">Gestión de Usuarios</button>
+              <button class="config-tab px-4 py-2 text-gray-500 hover:text-indigo-600 whitespace-nowrap" data-tab="servicios">Servicios</button>
+              <button class="config-tab px-4 py-2 text-gray-500 hover:text-indigo-600 whitespace-nowrap" data-tab="horarios">Horarios</button>
+              <button class="config-tab px-4 py-2 text-gray-500 hover:text-indigo-600 whitespace-nowrap" data-tab="notificaciones">Notificaciones</button>
+              <button class="config-tab px-4 py-2 text-gray-500 hover:text-indigo-600 whitespace-nowrap" data-tab="database">Base de Datos</button>
+            </div>
+
+            <!-- Contenido de las pestañas -->
+            <div>
+              <!-- Tab: Configuración General -->
+              <div id="tab-general" class="tab-content">
+                <h3 class="text-lg font-semibold text-indigo-800 mb-4">Información de la Óptica</h3>
+                <div class="space-y-6">
+                  <!-- Información de la óptica -->
+                  <div class="bg-indigo-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-indigo-800 mb-3">Información de la Óptica</h4>
+                    <form id="infoForm" class="space-y-4">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Óptica</label>
+                          <input type="text" id="nombreOptica" value="Centro Óptico González" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                          <input type="tel" id="telefonoOptica" value="+57 123 456 7890" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                        <input type="text" id="direccionOptica" value="Calle Principal 123, Medellín" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <input type="email" id="correoOptica" value="contacto@opticagonzalez.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                      </div>
+                      <div class="flex justify-end">
+                        <button type="submit" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                          Guardar Cambios
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <!-- Configuración de apariencia -->
+                  <div class="bg-indigo-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-indigo-800 mb-3">Apariencia</h4>
+                    <form id="appearanceForm" class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tema</label>
+                        <div class="flex gap-4">
+                          <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="theme" value="light" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                            <span>Claro</span>
+                          </label>
+                          <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="theme" value="dark" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                            <span>Oscuro</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Logo de la Óptica</label>
+                        <div class="flex items-center gap-4">
+                          <div class="h-20 w-20 rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-300">
+                            <img src="redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo actual" class="h-full w-full object-cover">
+                          </div>
+                          <div class="flex-1">
+                            <input type="file" id="logoUpload" class="hidden">
+                            <label for="logoUpload" class="inline-block bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                              Cambiar logo
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Formato recomendado: JPEG o PNG, tamaño mínimo 200x200px</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex justify-end">
+                        <button type="submit" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                          Guardar Cambios
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Gestión de Usuarios -->
+              <div id="tab-usuarios" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                  <h3 class="text-lg font-semibold text-indigo-800">Gestión de Usuarios</h3>
+                  <button id="addUserBtn" class="bg-indigo-600 text-white py-1 px-4 rounded-md hover:bg-indigo-700 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Añadir Usuario
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold">AG</div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900">Admin González</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-900">admin@opticagonzalez.com</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Administrador</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                          <button class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold">MP</div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900">María Pérez</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-900">maria@opticagonzalez.com</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Recepcionista</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                          <button class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold">JR</div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900">Juan Ramírez</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-900">juan@opticagonzalez.com</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Optometrista</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Inactivo</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                          <button class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Tab: Servicios -->
+              <div id="tab-servicios" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                  <h3 class="text-lg font-semibold text-indigo-800">Gestión de Servicios</h3>
+                  <button id="addServiceBtn" class="bg-indigo-600 text-white py-1 px-4 rounded-md hover:bg-indigo-700 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Añadir Servicio
+                  </button>
+                </div>
+                <!-- Lista de servicios con arrastrar y soltar para reordenar -->
+                <div class="space-y-2" id="servicesList">
+                  <div class="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between service-item">
+                    <div class="flex items-center">
+                      <div class="cursor-grab mr-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                      </div>
+                      <span class="font-medium">Examen de la Vista</span>
+                      <span class="ml-3 text-xs bg-gray-100 text-gray-800 py-1 px-2 rounded">45 min</span>
+                    </div>
+                    <div class="flex items-center">
+                      <div class="mr-4">
+                        <input type="checkbox" id="service-1-active" class="h-4 w-4 text-indigo-600 rounded" checked>
+                        <label for="service-1-active" class="ml-1 text-sm text-gray-700">Activo</label>
+                      </div>
+                      <button class="text-gray-400 hover:text-gray-600 mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button class="text-gray-400 hover:text-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between service-item">
+                    <div class="flex items-center">
+                      <div class="cursor-grab mr-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                      </div>
+                      <span class="font-medium">Entrega de Lentes</span>
+                      <span class="ml-3 text-xs bg-gray-100 text-gray-800 py-1 px-2 rounded">20 min</span>
+                    </div>
+                    <div class="flex items-center">
+                      <div class="mr-4">
+                        <input type="checkbox" id="service-2-active" class="h-4 w-4 text-indigo-600 rounded" checked>
+                        <label for="service-2-active" class="ml-1 text-sm text-gray-700">Activo</label>
+                      </div>
+                      <button class="text-gray-400 hover:text-gray-600 mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button class="text-gray-400 hover:text-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between service-item">
+                    <div class="flex items-center">
+                      <div class="cursor-grab mr-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                      </div>
+                      <span class="font-medium">Control</span>
+                      <span class="ml-3 text-xs bg-gray-100 text-gray-800 py-1 px-2 rounded">30 min</span>
+                    </div>
+                    <div class="flex items-center">
+                      <div class="mr-4">
+                        <input type="checkbox" id="service-3-active" class="h-4 w-4 text-indigo-600 rounded" checked>
+                        <label for="service-3-active" class="ml-1 text-sm text-gray-700">Activo</label>
+                      </div>
+                      <button class="text-gray-400 hover:text-gray-600 mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button class="text-gray-400 hover:text-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Horarios -->
+              <div id="tab-horarios" class="tab-content hidden">
+                <h3 class="text-lg font-semibold text-indigo-800 mb-4">Configuración de Horarios</h3>
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <h4 class="font-medium text-indigo-800">Horario de Atención</h4>
+                    <label class="flex items-center">
+                      <input type="checkbox" id="enableHorario" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span class="text-sm">Habilitar restricción de horario</span>
+                    </label>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Hora de apertura</label>
+                      <input type="time" id="openingTime" value="08:00" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Hora de cierre</label>
+                      <input type="time" id="closingTime" value="18:00" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-indigo-800 mb-4">Días de la Semana</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="space-y-2">
+                      <label class="flex items-center">
+                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Lunes</span>
+                      </label>
+                      <label class="flex items-center">
+                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Martes</span>
+                      </label>
+                      <label class="flex items-center">
+                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Miércoles</span>
+                      </label>
+                    </div>
+                    <div class="space-y-2">
+                      <label class="flex items-center">
+                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Jueves</span>
+                      </label>
+                      <label class="flex items-center">
+                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Viernes</span>
+                      </label>
+                      <label class="flex items-center">
+                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Sábado</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label class="flex items-center">
+                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        <span>Domingo</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mt-4">
+                    <h5 class="text-sm font-medium text-gray-700 mb-2">Días Festivos (No Laborables)</h5>
+                    <div class="flex flex-wrap gap-2">
+                      <div class="bg-white rounded px-2 py-1 text-xs flex items-center">
+                        01/01/2023
+                        <button class="ml-1 text-red-500 hover:text-red-700">×</button>
+                      </div>
+                      <div class="bg-white rounded px-2 py-1 text-xs flex items-center">
+                        25/12/2023
+                        <button class="ml-1 text-red-500 hover:text-red-700">×</button>
+                      </div>
+                      <button class="bg-white rounded px-2 py-1 text-xs flex items-center border border-dashed border-gray-300 hover:border-indigo-500 text-gray-500 hover:text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Añadir
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-4">
+                    <button type="button" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                      Guardar Horario
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Notificaciones -->
+              <div id="tab-notificaciones" class="tab-content hidden">
+                <h3 class="text-lg font-semibold text-indigo-800 mb-4">Configuración de Notificaciones</h3>
+                
+                <!-- Notificaciones por correo -->
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <h4 class="font-medium text-indigo-800">Notificaciones por Correo</h4>
+                    <label class="flex items-center">
+                      <input type="checkbox" id="enableEmailNotifications" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span class="text-sm">Activar notificaciones por correo</span>
+                    </label>
+                  </div>
+                  <div class="space-y-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span>Confirmación de nueva cita</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span>Recordatorio 24h antes de la cita</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span>Cancelación de cita</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span>Resumen diario de citas</span>
+                    </label>
+                  </div>
+                  <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Correos de administración (separados por coma)</label>
+                    <input type="text" value="admin@opticagonzalez.com, recepcion@opticagonzalez.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  </div>
+                </div>
+                
+                <!-- Notificaciones SMS -->
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <h4 class="font-medium text-indigo-800">Notificaciones SMS</h4>
+                    <label class="flex items-center">
+                      <input type="checkbox" id="enableSmsNotifications" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+                      <span class="text-sm">Activar notificaciones SMS</span>
+                    </label>
+                  </div>
+                  <div class="space-y-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" disabled class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2 opacity-50">
+                      <span class="opacity-50">Confirmación de nueva cita</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" disabled class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2 opacity-50">
+                      <span class="opacity-50">Recordatorio 2h antes de la cita</span>
+                    </label>
+                  </div>
+                  <div class="mt-4">
+                    <p class="text-sm text-gray-600">Para habilitar las notificaciones SMS, es necesario configurar una cuenta con un proveedor de SMS.</p>
+                    <button class="mt-2 text-sm text-indigo-600 hover:text-indigo-800 underline">Configurar proveedor SMS</button>
+                  </div>
+                </div>
+
+                <div class="flex justify-end">
+                  <button type="button" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    Guardar Configuración
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tab: Base de Datos -->
+              <div id="tab-database" class="tab-content hidden">
+                <h3 class="text-lg font-semibold text-indigo-800 mb-4">Gestión de Datos</h3>
+                
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-medium text-indigo-800 mb-3">Exportación de Datos</h4>
+                  <p class="text-sm text-gray-600 mb-4">Exporta los datos del sistema en diferentes formatos para facilitar su visualización.</p>
+                  
+                  <div class="flex flex-wrap gap-3 mb-4">
+                    <button class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Exportar a Excel
+                    </button>
+                    <button class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Exportar a PDF
+                    </button>
+                    <button class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Exportar a CSV
+                    </button>
+                  </div>
+                  
+                  <div class="border-t border-indigo-100 pt-4">
+                    <h5 class="text-sm font-medium text-gray-700 mb-2">Exportar por categorías</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <button class="bg-white border border-indigo-300 text-indigo-600 py-2 px-3 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
+                        Datos de clientes
+                      </button>
+                      <button class="bg-white border border-indigo-300 text-indigo-600 py-2 px-3 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
+                        Historial de citas
+                      </button>
+                      <button class="bg-white border border-indigo-300 text-indigo-600 py-2 px-3 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
+                        Productos vendidos
+                      </button>
+                      <button class="bg-white border border-indigo-300 text-indigo-600 py-2 px-3 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
+                        Historial de pagos
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-medium text-indigo-800 mb-3">Respaldo y Restauración</h4>
+                  <p class="text-sm text-gray-600 mb-4">Crea copias de seguridad de tus datos o restaura desde una copia anterior.</p>
+                  
+                  <div class="flex flex-wrap gap-3">
+                    <button class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Crear respaldo local
+                    </button>
+                    <button class="bg-white border border-indigo-600 text-indigo-600 py-2 px-4 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      Restaurar desde archivo
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-medium text-blue-800 mb-3">Visualización de Datos</h4>
+                  <p class="text-sm text-gray-600 mb-4">Opciones para visualizar los datos del sistema.</p>
+                  
+                  <div class="flex flex-wrap gap-3">
+                    <button class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2v-14a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Ver estadísticas
+                    </button>
+                    <button class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h2a2 2 0 002-2z" />
+                      </svg>
+                      Ver en formato tabla
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bg-red-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-red-800 mb-3">Zona de Peligro</h4>
+                  <p class="text-sm text-red-600 mb-4">Estas acciones pueden provocar pérdida de datos. Úsalas con precaución.</p>
+                  
+                  <div class="flex flex-wrap gap-3">
+                    <button class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Limpiar citas antiguas
+                    </button>
+                    <button class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Reiniciar Base de Datos
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      <footer class="bg-white/80 p-4 border-t border-gray-200 text-center text-gray-500 text-sm">
+        &copy; 2025 Centro Óptico González | Sistema v1.0.0
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: Añadir Usuario -->
+  <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
+      <button type="button" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Añadir Nuevo Usuario</h3>
+      <form class="space-y-4">
+        <div>
+          <label for="newUserName" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+          <input type="text" id="newUserName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="newUserEmail" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+          <input type="email" id="newUserEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="newUserRole" class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+          <select id="newUserRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="admin">Administrador</option>
+            <option value="receptionist">Recepcionista</option>
+            <option value="optometrist">Optometrista</option>
+            <option value="viewer">Visor</option>
+          </select>
+        </div>
+        <div>
+          <label for="newUserPassword" class="block text-sm font-medium text-gray-700 mb-1">Contraseña Temporal</label>
+          <input type="password" id="newUserPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="newUserStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <div class="flex items-center space-x-4">
+            <label class="flex items-center">
+              <input type="radio" name="userStatus" value="active" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+              <span>Activo</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="userStatus" value="inactive" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2">
+              <span>Inactivo</span>
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-end pt-2">
+          <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 mr-2">
+            Cancelar
+          </button>
+          <button type="submit" class="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Actualizar el preloader para mejorar la experiencia visual -->
+  <div id="authPreloader" class="fixed inset-0 bg-gradient-to-br from-indigo-50 to-white z-[100] flex items-center justify-center">
+    <div class="text-center max-w-md px-6">
+      <div class="mb-6">
+        <img src="redowan-dhrubo-OWfBsDDOUlQ-unsplash.webp" alt="Logo Óptica" class="h-28 w-28 object-cover rounded-full mx-auto shadow-lg border-4 border-white">
+      </div>
+      <h2 class="text-2xl font-bold text-indigo-800 mb-4">Centro Óptico González</h2>
+      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600 mx-auto mb-4"></div>
+      <p class="text-lg text-indigo-800 font-medium">Cargando dashboard...</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+  const authPreloader = document.getElementById('authPreloader');
+  const loginPanel = document.getElementById('loginPanel');
+  const configContent = document.getElementById('configContent');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarMobile = document.getElementById('sidebarMobile');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const header = document.querySelector('header');
+  
+  // Verificar si hay una sesión activa
+  checkSession();
+  
+  // Función para verificar sesión
+  function checkSession() {
+    const sessionCookie = getCookie('opticaSessionActive');
+    const userCookie = getCookie('opticaUser');
+    
+    if (sessionCookie === 'true' && userCookie) {
+      // Hay sesión activa
+      try {
+        const userData = JSON.parse(decodeURIComponent(userCookie));
+        showAuthenticatedUI(userData);
+      } catch (e) {
+        console.error('Error al procesar los datos de usuario:', e);
+        showLoginUI();
+      }
+    } else {
+      // No hay sesión activa, mostrar login
+      showLoginUI();
+    }
+  }
+  
+  // Mostrar interfaz de login
+  function showLoginUI() {
+    // Ocultar el preloader
+    authPreloader.classList.add('hidden');
+    
+    // Mostrar el panel de login centrado a pantalla completa
+    loginPanel.classList.remove('hidden');
+    configContent.classList.add('hidden');
+    
+    // Ocultar sidebar, botón de toggle y encabezado en móvil
+    sidebar.classList.add('hidden');
+    sidebarToggle.classList.add('hidden');
+    
+    // Ocultar el encabezado principal para una experiencia de login limpia
+    header.classList.add('hidden');
+    
+    // Centrar el footer y aplicar estilos para la pantalla de login
+    const footer = document.querySelector('footer');
+    footer.classList.add('login-footer');
+    
+    // Eliminar información de usuario si existe
+    const userInfoElement = document.querySelector('.user-info');
+    if (userInfoElement) {
+      userInfoElement.remove();
+    }
+    
+    // Asegurar que el fondo se muestra correctamente al iniciar sesión
+    document.body.classList.add('login-active');
+  }
+  
+  // Mostrar interfaz autenticada
+  function showAuthenticatedUI(user) {
+    // Ocultar el preloader
+    authPreloader.classList.add('hidden');
+    
+    // Ocultar el panel de login y mostrar el contenido
+    loginPanel.classList.add('hidden');
+    configContent.classList.remove('hidden');
+    
+    // Mostrar sidebar, botón de toggle y encabezado
+    sidebar.classList.remove('hidden');
+    sidebarToggle.classList.remove('hidden');
+    header.classList.remove('hidden');
+    
+    // Quitar la clase de fondo de login
+    document.body.classList.remove('login-active');
+    
+    // Restaurar el footer normal
+    const footer = document.querySelector('footer');
+    footer.classList.remove('login-footer');
+    
+    // Añadir información del usuario al header si no existe
+    if (!document.querySelector('.user-info')) {
+      const userInfoHTML = `
+        <div class="user-info flex items-center ml-auto">
+          <div class="text-right mr-4">
+            <p class="text-sm font-medium text-indigo-800">${user.name || 'Usuario'}</p>
+            <p class="text-xs text-gray-500">${user.role || 'Usuario'}</p>
+          </div>
+          <button id="logoutBtn" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 p-2 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+      `;
+      header.querySelector('div').insertAdjacentHTML('beforeend', userInfoHTML);
+      
+      // Añadir evento de cierre de sesión
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+    }
+  }
+  
+  // Procesar login
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const loginError = document.getElementById('loginError');
+    
+    // Validación simple
+    if (!email || !password) {
+      loginError.classList.remove('hidden');
+      loginError.textContent = 'Por favor complete todos los campos.';
+      return;
+    }
+    
+    // Simulación de autenticación
+    authPreloader.classList.remove('hidden');
+    
+    setTimeout(() => {
+      // Credenciales demo: admin@opticagonzalez.com / admin
+      if (email === 'admin@opticagonzalez.com' && password === 'admin') {
+        // Crear datos de usuario
+        const userData = {
+          email: email,
+          name: 'Admin González',
+          role: 'Administrador',
+          timestamp: new Date().getTime()
+        };
+        
+        // Guardar sesión en cookies (expira en 8 horas)
+        setCookie('opticaSessionActive', 'true', 8);
+        setCookie('opticaUser', encodeURIComponent(JSON.stringify(userData)), 8);
+        
+        // Mostrar UI autenticada
+        showAuthenticatedUI(userData);
+      } else {
+        // Mostrar error
+        authPreloader.classList.add('hidden');
+        loginError.classList.remove('hidden');
+        loginError.textContent = 'Credenciales incorrectas. Intente nuevamente.';
+      }
+    }, 1500);
+  });
+  
+  // Funciones auxiliares para manejo de cookies
+  function setCookie(name, value, hours) {
+    let expires = '';
+    if (hours) {
+      const date = new Date();
+      date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+      expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + value + expires + '; path=/; SameSite=Strict';
+  }
+  
+  function getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+  
+  function deleteCookie(name) {
+    document.cookie = name + '=; Max-Age=-99999999; path=/';
+  }
+  
+  // Funcionalidad de olvidó contraseña
+  document.getElementById('resetPasswordLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    
+    if (!email) {
+      const loginError = document.getElementById('loginError');
+      loginError.classList.remove('hidden');
+      loginError.textContent = 'Ingrese su correo electrónico primero.';
+      return;
+    }
+    
+    authPreloader.classList.remove('hidden');
+    
+    setTimeout(() => {
+      authPreloader.classList.add('hidden');
+      alert(`Se ha enviado un correo de recuperación a: ${email}`);
+    }, 1500);
+  });
+  
+  // Configurar navegación de pestañas
+  const configTabs = document.querySelectorAll('.config-tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  configTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Remover clase activa de todas las pestañas
+      configTabs.forEach(t => t.classList.remove('text-indigo-800', 'font-semibold', 'border-b-2', 'border-indigo-500'));
+      configTabs.forEach(t => t.classList.add('text-gray-500', 'hover:text-indigo-600'));
+      
+      // Añadir clase activa a la pestaña seleccionada
+      this.classList.remove('text-gray-500', 'hover:text-indigo-600');
+      this.classList.add('text-indigo-800', 'font-semibold', 'border-b-2', 'border-indigo-500');
+      
+      // Ocultar todos los contenidos
+      tabContents.forEach(content => content.classList.add('hidden'));
+      
+      // Mostrar el contenido seleccionado
+      const tabId = this.getAttribute('data-tab');
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    });
+  });
+  
+  // Completar funcionalidad del sidebar móvil
+  const closeSidebarMobile = document.getElementById('closeSidebarMobile');
+  const sidebarMobileBackdrop = document.getElementById('sidebarMobileBackdrop');
+  
+  sidebarToggle.addEventListener('click', function() {
+    sidebarMobile.classList.remove('-translate-x-full');
+    sidebarMobileBackdrop.classList.remove('hidden');
+    // Ocultar el botón hamburguesa cuando el menú está abierto
+    this.style.opacity = '0';
+    this.style.pointerEvents = 'none';
+  });
+  
+  closeSidebarMobile.addEventListener('click', function() {
+    sidebarMobile.classList.add('-translate-x-full');
+    setTimeout(() => {
+      sidebarMobileBackdrop.classList.add('hidden');
+      // Mostrar el botón hamburguesa cuando el menú está cerrado
+      sidebarToggle.style.opacity = '1';
+      sidebarToggle.style.pointerEvents = 'auto';
+    }, 300);
+  });
+  
+  sidebarMobileBackdrop.addEventListener('click', function() {
+    sidebarMobile.classList.add('-translate-x-full');
+    setTimeout(() => {
+      sidebarMobileBackdrop.classList.add('hidden');
+      // Mostrar el botón hamburguesa cuando el menú está cerrado
+      sidebarToggle.style.opacity = '1';
+      sidebarToggle.style.pointerEvents = 'auto';
+    }, 300);
+  });
+  
+  // Cerrar al hacer clic en enlaces
+  document.querySelectorAll('#sidebarMobile a').forEach(link => {
+    link.addEventListener('click', function() {
+      sidebarMobile.classList.add('-translate-x-full');
+      sidebarMobileBackdrop.classList.add('hidden');
+    });
+  });
+  
+  // Modificar la función de días festivos para que no solicite fecha
+  const addHolidayBtn = document.querySelector('.text-gray-500.hover\\:text-indigo-600');
+  
+  if (addHolidayBtn) {
+    addHolidayBtn.addEventListener('click', function() {
+      const currentDate = new Date();
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const year = currentDate.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+      
+      const holidaysContainer = this.parentElement;
+      const newHoliday = document.createElement('div');
+      newHoliday.className = 'bg-white rounded px-2 py-1 text-xs flex items-center';
+      newHoliday.innerHTML = `
+        ${formattedDate}
+        <button class="ml-1 text-red-500 hover:text-red-700">×</button>
+      `;
+      
+      // Agregar antes del botón de añadir
+      holidaysContainer.insertBefore(newHoliday, this);
+      
+      // Configurar botón eliminar
+      newHoliday.querySelector('button').addEventListener('click', function() {
+        newHoliday.remove();
+      });
+    });
+  }
+  
+  // Configurar botones de eliminar para días festivos existentes
+  document.querySelectorAll('.bg-white.rounded.px-2.py-1 button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.parentElement.remove();
+    });
+  });
+  
+  // Abrir modal de añadir usuario
+  const addUserBtn = document.getElementById('addUserBtn');
+  const addUserModal = document.getElementById('addUserModal');
+
+  if (addUserBtn && addUserModal) {
+    addUserBtn.addEventListener('click', function() {
+      addUserModal.classList.remove('hidden');
+    });
+
+    // Cerrar modal
+    const closeModalBtns = addUserModal.querySelectorAll('button[type="button"]');
+    closeModalBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        addUserModal.classList.add('hidden');
+      });
+    });
+  }
+
+  // Implementar la funcionalidad de cambio de tema (código corregido)
+  const themeRadios = document.querySelectorAll('input[name="theme"]');
+  themeRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      const selectedTheme = this.value;
+      
+      // Eliminar tema actual
+      document.body.classList.remove('dark-theme');
+      
+      // Aplicar el tema seleccionado
+      if (selectedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+      }
+      
+      // Guardar preferencia en localStorage
+      localStorage.setItem('opticaTheme', selectedTheme);
+    });
+  });
+
+  // Cargar tema guardado al iniciar
+  const savedTheme = localStorage.getItem('opticaTheme');
+  if (savedTheme) {
+    const themeInput = document.querySelector(`input[name="theme"][value="${savedTheme}"]`);
+    if (themeInput) {
+      themeInput.checked = true;
+      // Disparar el evento change para aplicar el tema
+      themeInput.dispatchEvent(new Event('change'));
+    }
+  }
+
+  // Reemplaza el código actual para eliminar la fecha
+  // Implementa esta solución al final de tu script principal, fuera del evento DOMContentLoaded
+
+  // Eliminar la fecha que aparece cuando se hace clic en Gestión de Usuarios
+  const usuariosTab = document.querySelector('.config-tab[data-tab="usuarios"]');
+  if (usuariosTab) {
+    usuariosTab.addEventListener('click', function() {
+      // Usamos setTimeout para asegurarnos de que se ejecute después de que se muestre la pestaña
+      setTimeout(() => {
+        // Buscar elementos de fecha en el DOM
+        const dateElements = document.querySelectorAll('.tab-content #tab-usuarios time, .tab-content #tab-usuarios .date');
+        dateElements.forEach(el => el.remove());
+        
+        // Buscar cualquier texto o elemento que contenga una fecha en formato específico
+        const headerElement = document.querySelector('#tab-usuarios h3');
+        if (headerElement && headerElement.textContent.includes('2025')) {
+          // Restaurar solo el texto de encabezado
+          headerElement.textContent = 'Gestión de Usuarios';
+        }
+        
+        // Buscar en otras ubicaciones comunes
+        const allElements = document.querySelectorAll('#tab-usuarios *');
+        allElements.forEach(el => {
+          if (el.childNodes && el.childNodes.length > 0) {
+            el.childNodes.forEach(node => {
+              if (node.nodeType === 3 && node.textContent.trim().match(/\d{2}\/\d{2}\/\d{4}/)) {
+                node.textContent = '';
+              }
+            });
+          }
+        });
+      }, 10);
+    });
+  }
+
+  // Reemplaza la función closeMobileMenu con esta versión:
+  function closeMobileMenu() {
+  if (sidebarMobile) {
+    sidebarMobile.classList.add('-translate-x-full');
+    setTimeout(() => {
+      if (sidebarMobileBackdrop) {
+        sidebarMobileBackdrop.classList.add('hidden');
+      }
+    }, 300); // Espera a que termine la transición
+    document.body.style.overflow = ''; // Restaurar scroll
+  }
+}
+
+window.addEventListener('resize', function() {
+  // Si el ancho de pantalla es mayor a 768px (md), ocultar sidebar móvil y backdrop
+  if (window.innerWidth >= 768) {
+    sidebarMobile.classList.add('-translate-x-full');
+    sidebarMobileBackdrop.classList.add('hidden');
+    sidebarToggle.style.opacity = '1';
+    sidebarToggle.style.pointerEvents = 'auto';
+  }
+});
+  });
+</script>
+</body>
+</html>
